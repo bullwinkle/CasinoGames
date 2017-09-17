@@ -1,9 +1,10 @@
-import {Backbone} from '../vendor';
-import {props} from './decorators';
+import { Backbone } from '../vendor';
+import { props } from './decorators';
 
 @props({
-  defaults: {
-    isUpdating: false
-  }
+	defaults: {
+		isUpdating: false
+	}
 })
-export class AppState extends Backbone.Model {}
+export class AppState extends Backbone.Model {
+}
