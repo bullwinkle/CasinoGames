@@ -24,6 +24,7 @@
     "css-loader": "^0.23.1",
     "sass-loader": "^3.1.2",
     "pug": "^2.0.0-beta11",
+    "style-loader": "^0.18.2",
     "pug-loader": "^2.3.0"
   },
   "author": "WebpackBin",

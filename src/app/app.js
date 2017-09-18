@@ -1,6 +1,6 @@
 import { Backbone, Marionette, $, Radio } from '../vendor';
 import { props } from './decorators';
-import { RootView } from './root';
+import { RootView } from './root/root';
 import { AppState } from './app-state';
 import { AppRouter } from './app-router';
 

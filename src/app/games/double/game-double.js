@@ -1,8 +1,11 @@
 import { Backbone, Marionette } from '../../../vendor';
-import { props } from '../../decorators';
+import { props } from 'app/decorators';
+import template from './game-duble.tpl.pug';
+import styles from "./game-double.scss";
 
 @props({
-	template: data => `hello game`,
-	regions: {}
+	template,
+	regions: {},
+	className: 'game-double'
 })
 export class GameDouble extends Marionette.View {}

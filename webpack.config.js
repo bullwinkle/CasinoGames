@@ -40,7 +40,8 @@ module.exports = {
 		publicPath: '/'
 	},
 	resolve: {
-		extensions: [ '.ts', '.tsx', '.js', '.jsx' ]
+		extensions: [ '.ts', '.tsx', '.js', '.jsx' ],
+		modules: [path.resolve('src'),'node_modules']
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
