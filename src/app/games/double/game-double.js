@@ -8,4 +8,11 @@ import styles from "./game-double.scss";
 	regions: {},
 	className: 'game-double'
 })
-export class GameDouble extends Marionette.View {}
+export class GameDouble extends Marionette.View {
+	serializeData () {
+		return {
+			...this.model.toJSON(),
+			foo: 123,bar: 2
+		}
+	}
+}
