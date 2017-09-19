@@ -32,7 +32,7 @@ export class App extends Marionette.Application {
 		this.router = new AppRouter();
 		this.listenTo(this.router, 'route', ( name, args ) => {
 			this.state.set('route', { name, args });
-		})
+		});
 		this.channel.reply('update', this.update.bind(this))
 	}
 
@@ -52,7 +52,6 @@ export class App extends Marionette.Application {
 	*/
 
 	update( { data, view, options } ) {
-		console.log(data, view, options)
 		this.state.set('isUpdating', true);
 		const updatePromise = new Promise(( resolve, reject ) => {
 			try {
@@ -69,7 +68,7 @@ export class App extends Marionette.Application {
 			} catch ( e ) {
 				reject(e);
 			}
-		})
+		});
 		this.updateStack.push(updatePromise);
 		const finallyCb = () => {
 			this.updateStack.splice(

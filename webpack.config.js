@@ -4,31 +4,44 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 var loaders = [
 	{
-		"test": /\.jsx?$/,
-		"exclude": /node_modules/,
-		"loader": "babel-loader",
-		"query": {
-			"presets": [
+		test: /\.jsx?$/,
+		exclude: /node_modules/,
+		loader: "babel-loader",
+		query: {
+			presets: [
 				"babel-preset-es2015",
 				"babel-preset-stage-0"
 			],
-			"plugins": [
+			plugins: [
 				"babel-plugin-transform-decorators-legacy"
 			]
 		}
 	},
 	{
-		"test": /\.css?$/,
-		"loader": "style-loader!css-loader"
+		test: /\.css?$/,
+		loader: "style-loader!css-loader"
 	},
 	{
-		"test": /\.scss?$/,
-		"loader": "style-loader!css-loader!sass-loader"
+		test: /\.scss?$/,
+		loader: "style-loader!css-loader!sass-loader"
 	},
 	{
-		"test": /\.pug?$/,
-		"loader": "pug-loader"
-	}
+		test: /\.html?$/,
+		use: {
+			loader: "html-loader",
+			options: {
+				attrs: ['link:href','img:src']
+			}
+		}
+	},
+	{
+		test: /\.pug?$/,
+		loader: "pug-loader"
+	},
+	{
+		test: /\.(jpg|png|gif|svg|eot|woff|woff2|ttf)$/,
+		use: [ "url-loader" ]
+	},
 ];
 
 module.exports = {
