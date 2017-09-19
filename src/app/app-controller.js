@@ -4,13 +4,14 @@ const appChannel = Radio.channel('app');
 
 import { GameDouble } from './games/double/game-double'
 import { NotFound } from './not-found/notfound'
+import {Home} from "./home/Home";
 
 export class AppController {
 
 	home() {
 		appChannel.request('update', {
 			data: {},
-			view: {},
+			view: Home,
 			options: {}
 		})
 	}

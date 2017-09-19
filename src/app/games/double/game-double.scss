@@ -1,3 +1,94 @@
 .game-double {
-  background: red;
+
+  // VARIABLES
+
+  $COLORS: (
+    red: #f55e53,
+    green: #29b485,
+    black: #1a1a1a,
+    base: #454546
+  );
+
+
+  &-container {
+    padding: 10px;
+    background-color: #e7edf1;
+    color: map-get($COLORS,'base');
+  }
+
+
+  // LAYOUTS
+  .l-flex {
+    display: flex;
+  }
+  @each $flexItem in 1,2,3,4,5 {
+    .l-flex-#{$flexItem} {
+      flex: $flexItem;
+    }
+  }
+  .l-centered {
+    margin: 0 auto;
+  }
+
+  // SKINS
+  @each $bgColorName,$bgColorValue in $COLORS {
+    @debug $bgColorName;
+    @debug $bgColorValue;
+    .s-bg-#{$bgColorName} {
+      background-color: $bgColorValue;
+    }
+  }
+  .s-bd-base {
+    border: 1px solid #d2d4d6;
+    border-radius: 3px;
+  }
+  .s-panel {
+    padding: 10px;
+    background-color: #f4f8fb;
+  }
+
+
+  // FONTS
+  .f-sz {
+    font-size: 14px;
+    line-height:18px;
+  }
+  .f-sz-s {
+    font-size: 12px;
+    line-height:16px;
+  }
+  .f-sz-xs {
+    font-size: 10px;
+    line-height:14px;
+  }
+  .f-sz-l {
+    font-size: 16px;
+    line-height:20px;
+  }
+  .f-sz-xl {
+    font-size: 18px;
+    line-height: 22px;
+  }
+  .f-upper {
+    text-transform: uppercase;
+  }
+
+  @each $color in $COLORS {
+    .f-c-#{$color} {
+      color: $color
+    }
+  }
+
+
+  .spinner-item {
+    color: white;
+    width: 40px;
+    height: 40px;
+    line-height: 26px;
+    text-align: right;
+    padding: 7px;
+    box-sizing: border-box;
+    font-weight: 100;
+  }
+
 }

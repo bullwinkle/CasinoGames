@@ -1,4 +1,4 @@
-import { Backbone, Marionette } from '../../../vendor';
+import { Backbone, Marionette } from 'vendor';
 import { props } from 'app/decorators';
 import template from './home.tpl.pug';
 

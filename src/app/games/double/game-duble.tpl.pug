@@ -1,5 +1,9 @@
 .game-double-container
-	.spinner spinner
+	.spinner
+		.l-flex
+			each el in range
+				- const className = `s-bg-${el.color}`
+				.spinner-item.l-flex-1(class=className)= el.value
 
 	.bids bids
 
