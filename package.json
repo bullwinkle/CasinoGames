@@ -23,6 +23,7 @@
     "babel-preset-stage-0": "^6.5.0",
     "css-loader": "^0.23.1",
     "html-webpack-plugin": "2.22.0",
+    "postcss-loader": "^2.0.6",
     "pug": "^2.0.0-beta11",
     "pug-loader": "^2.3.0",
     "sass-loader": "^3.1.2",
