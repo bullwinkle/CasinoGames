@@ -1,4 +1,4 @@
-import { Backbone, Marionette } from 'vendor';
+import { Backbone, Marionette, html2canvas,domtoimage } from 'vendor';
 import { props } from 'app/decorators';
 import template from './game-duble.tpl.pug';
 import styles from "./game-double.scss";
@@ -6,7 +6,12 @@ import styles from "./game-double.scss";
 @props({
 	template,
 	regions: {},
-	className: 'game-double'
+	className: 'game-double',
+	ui: {
+		spinner: '.spinner',
+		spinnerCellsContainer: '.spinner-cells',
+		spinnerCopy: '.spinner-copy'
+	}
 })
 export class GameDouble extends Marionette.View {
 
@@ -26,6 +31,7 @@ export class GameDouble extends Marionette.View {
 					.sort(()=>{
 						return Math.round(Math.random()*3)-1;
 					});
+
 
 				/*
 				отсортитьвать массив таким образом, чтобы цвета ячеек чередовались,
@@ -47,6 +53,7 @@ export class GameDouble extends Marionette.View {
 							result.push(tmpAr.pop())
 						}
 					}
+					console.log(tmpAr.length)
 				}
 				return result;
 			})()

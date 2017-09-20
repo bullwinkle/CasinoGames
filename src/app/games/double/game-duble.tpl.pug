@@ -1,14 +1,91 @@
-.game-double-container
+.game-double-container.l-stack
 	.spinner
-		.l-flex
+		.indicator
+		.spinner-cells.l-flex
 			each el in range
 				- const className = `s-bg-${el.color}`
 				.spinner-item.l-flex-1(class=className)= el.value
 
-	.bids bids
+	.bids.s-panel.s-bg-gray-l.l-stack
+		div.l-flex
+			div
+				.l-ib(style="margin-right:10px;") Ставка
+				input.l-h-100p(value=0)
+			.bid-actions.l-flex-1.l-i-flex.s-bd-base
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s Очистить
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s Последняя
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +10
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +100
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +500
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +1000
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s 1/2
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s x2
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s Макс
+		div Баланс:
+			span 0
 
-	.actions actions
+	.l-flex.m-centered
 
-	.users users
+		mixin column (from,to,upTo,count,color,colorWord,playersCount,playersTotal,users)
+			.l-flex-1.l-p.l-stack
+				button.s-btn.m-expand.l-nowrap.f-c-white(class='s-bg-'+color)= button
+					| #[b #{from}] До #[b #{to}], Победа #[b #{upTo||0}x]
+				.count= count||0
+				.l-flex.s-panel.s-bg-white
+					div: img(src='#')
+					.flex-1
+						.f-sz.f-upper(class=`f-c-${ color }`) Наибольшее #{colorWord}
+						.f-sz-s.f-black Sucharexzekk
+						.f-sz-s.count 2000
+					div: img(src='#')
 
-	pre= JSON.stringify(locals)
+				.l-centered.l-center
+					.l-ib.s-bd-base.l-nowrap.f-sz-s.l-p-s
+						| #[b.f-c-red #{playersCount}] #[span.f-upper всего игроков:] #[span #{playersTotal}]
+
+				.users-list: each user in users
+					.l-flex
+						.user-icon: img(src=user.icon)
+						.l-flex-1: div= user.name
+						div= user.count
+
+
+
+		+column(2,7,2,0,'red','красное',8,10440,[
+			{
+				name: 'foo',
+				icon: 'user.png',
+				count: 20000
+			},
+			{
+				name: 'maz',
+				icon: 'user.png',
+				count: 17600
+			}
+		])
+		+column(0,7,14,0,'green','зелёное',2,1860,[
+			{
+				name: 'bar',
+				icon: 'user.png',
+				count: 850
+			},
+			{
+				name: 'vaf',
+				icon: 'user.png',
+				count: 5800
+			}
+		])
+		+column(1,8,2,0,'black','чёрное',14,18100,[
+			{
+				name: 'baz',
+				icon: '',
+				count: 55000
+			},
+			{
+				name: 'huf',
+				icon: '',
+				count: 2140
+			}
+		])
+
+//pre= JSON.stringify(locals,null,2)

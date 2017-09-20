@@ -1,14 +1,15 @@
+// VARIABLES
+
+$COLORS: (
+  red: #f55e53,
+  green: #29b485,
+  black: #1a1a1a,
+  white: white,
+  base: #454546,
+  gray-l: #f4f8fb
+);
+
 .game-double {
-
-  // VARIABLES
-
-  $COLORS: (
-    red: #f55e53,
-    green: #29b485,
-    black: #1a1a1a,
-    base: #454546
-  );
-
 
   &-container {
     padding: 10px;
@@ -18,16 +19,72 @@
 
 
   // LAYOUTS
+  .l-stack {
+    & > * + * {
+      margin-top: 10px;
+    }
+  }
   .l-flex {
     display: flex;
+    &.m-centered {
+      align-items: center;
+    }
+  }
+  .l-i-flex {
+    display: inline-flex;
+  }
+  .l-nowrap {
+    white-space: nowrap;
   }
   @each $flexItem in 1,2,3,4,5 {
     .l-flex-#{$flexItem} {
       flex: $flexItem;
     }
   }
+  @each $align in left,center,right {
+    .l-#{$align} {
+      text-align: $align;
+    }
+  }
+  .l-ib {
+    display: inline-block;
+  }
   .l-centered {
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .l-p-xs {
+    padding: 4px;
+  }
+  .l-p-s {
+    padding: 6px;
+  }
+  .l-p {
+    padding: 8px;
+  }
+  .l-p-l {
+    padding: 10px;
+  }
+  .l-p-xl {
+    padding: 12px;
+  }
+  .l-m-xs {
+    margin: 4px;
+  }
+  .l-m-s {
+    margin: 6px;
+  }
+  .l-m {
+    margin: 8px;
+  }
+  .l-m-l {
+    margin: 10px;
+  }
+  .l-m-xl {
+    margin: 12px;
+  }
+  .l-h-100p {
+    height: 100%;
   }
 
   // SKINS
@@ -44,22 +101,48 @@
   }
   .s-panel {
     padding: 10px;
-    background-color: #f4f8fb;
+    border: 1px solid #d2d4d6;
+    border-radius: 3px;
+    //background-color: map-get($COLORS,'gray-l');
+  }
+  .s-btn {
+    border-radius: 0px;
+    font-size: 14px;
+    line-height:22px;
+    font-weight: 300;
+    border: none;
+    padding: 12px 20px;
+    transform: scale(1);
+    box-shadow: -0.5px 0.5px 1.5px 0 rgba(0,0,0,0.4), 0 0 0 0 rgba(0,0,0,0.4) inset;
+    transition: box-shadow .1s ease-in-out, transform .1s ease-in-out;
+
+    &:active,&:hover {
+      outline: none;
+    }
+    &:active {
+      transform: scale(0.992);
+      box-shadow: 0 0 0 0 rgba(0,0,0,0.4), -0.5px 0.5px 1.5px 0 rgba(0,0,0,0.4) inset;
+    }
+
+    &.m-expand {
+      width: 100%;
+    }
   }
 
 
+
   // FONTS
-  .f-sz {
-    font-size: 14px;
-    line-height:18px;
+  .f-sz-xs {
+    font-size: 10px;
+    line-height:14px;
   }
   .f-sz-s {
     font-size: 12px;
     line-height:16px;
   }
-  .f-sz-xs {
-    font-size: 10px;
-    line-height:14px;
+  .f-sz {
+    font-size: 14px;
+    line-height:18px;
   }
   .f-sz-l {
     font-size: 16px;
@@ -69,26 +152,85 @@
     font-size: 18px;
     line-height: 22px;
   }
+
   .f-upper {
     text-transform: uppercase;
   }
 
-  @each $color in $COLORS {
-    .f-c-#{$color} {
-      color: $color
+  @each $colorName,$colorValue in $COLORS {
+    .f-c-#{$colorName} {
+      color: $colorValue
     }
   }
 
 
+  $itemSide: 40px;
+
+  .spinner {
+    position: relative;
+    border: 1px solid white;
+    padding: 1px;
+  }
+
   .spinner-item {
     color: white;
-    width: 40px;
-    height: 40px;
+    width: $itemSide;
+    height: $itemSide;
     line-height: 26px;
     text-align: right;
     padding: 7px;
     box-sizing: border-box;
     font-weight: 100;
+  }
+
+  .indicator {
+    width: $itemSide;
+    height: $itemSide;
+    position: absolute;
+    top: 0px;
+    left: calc( 50% - #{$itemSide} / 2);
+    border: 1px solid white;
+    &:before {
+      content: "";
+      position: absolute;
+      height: 100%;
+      width: 1px;
+      background-color: white;
+      left: 50%;
+      z-index: 10;
+    }
+  }
+
+  .bid-actions {
+    border-radius: 6px;
+    overflow-y: auto;
+    & > * {
+      text-align: center;
+      &:not(:active) {
+        box-shadow: none;
+      }
+      &:active {
+        transform: initial;
+      }
+      &:focus {
+        outline: none;
+      }
+    }
+    & > * + * {
+      border-left: 1px solid #d2d4d6;
+      border-right: none;
+    }
+  }
+
+  .users-list {
+    & > * {
+      padding: 5px 8px 5px 2px;
+      background-image: linear-gradient(to right,transparent 20%,rgba(0,0,0,0.2));
+      margin-bottom: 5px;
+    }
+    & > *:not(:last-child) {
+      border-bottom: 1px solid lighten(map-get($COLORS,'base'),20%);
+    }
   }
 
 }

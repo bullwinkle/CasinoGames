@@ -68,7 +68,7 @@ export class App extends Marionette.Application {
 			} catch ( e ) {
 				reject(e);
 			}
-		});
+		})
 		this.updateStack.push(updatePromise);
 		const finallyCb = () => {
 			this.updateStack.splice(
