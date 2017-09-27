@@ -1,13 +1,4 @@
-// VARIABLES
-
-$COLORS: (
-  red: #f55e53,
-  green: #29b485,
-  black: #1a1a1a,
-  white: white,
-  base: #454546,
-  gray-l: #f4f8fb
-);
+@import "~styles/variables";
 
 .game-double {
 
@@ -21,154 +12,6 @@ $COLORS: (
     color: map-get($COLORS,'base');
     min-width: 600px;
   }
-
-
-  // LAYOUTS
-  .l-stack {
-    & > * + * {
-      margin-top: 10px;
-    }
-  }
-  .l-flex {
-    display: flex;
-    &.m-centered {
-      align-items: center;
-    }
-  }
-  .l-i-flex {
-    display: inline-flex;
-  }
-  .l-nowrap {
-    white-space: nowrap;
-  }
-  @each $flexItem in 1,2,3,4,5 {
-    .l-flex-#{$flexItem} {
-      flex: $flexItem;
-    }
-  }
-  @each $align in left,center,right {
-    .l-#{$align} {
-      text-align: $align;
-    }
-  }
-  .l-ib {
-    display: inline-block;
-  }
-  .l-centered {
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .l-p-xs {
-    padding: 4px;
-  }
-  .l-p-s {
-    padding: 6px;
-  }
-  .l-p {
-    padding: 8px;
-  }
-  .l-p-l {
-    padding: 10px;
-  }
-  .l-p-xl {
-    padding: 12px;
-  }
-  .l-m-xs {
-    margin: 4px;
-  }
-  .l-m-s {
-    margin: 6px;
-  }
-  .l-m {
-    margin: 8px;
-  }
-  .l-m-l {
-    margin: 10px;
-  }
-  .l-m-xl {
-    margin: 12px;
-  }
-  .l-h-100p {
-    height: 100%;
-  }
-
-  // SKINS
-  @each $bgColorName,$bgColorValue in $COLORS {
-    @debug $bgColorName;
-    @debug $bgColorValue;
-    .s-bg-#{$bgColorName} {
-      background-color: $bgColorValue;
-    }
-  }
-  .s-bd-base {
-    border: 1px solid #d2d4d6;
-    border-radius: 3px;
-  }
-  .s-panel {
-    padding: 10px;
-    border: 1px solid #d2d4d6;
-    border-radius: 3px;
-    //background-color: map-get($COLORS,'gray-l');
-  }
-  .s-btn {
-    display: inline-block;
-    border-radius: 0px;
-    font-size: 14px;
-    line-height:22px;
-    font-weight: 300;
-    border: none;
-    padding: 12px 20px;
-    transform: scale(1);
-    box-shadow: -0.5px 0.5px 1.5px 0 rgba(0,0,0,0.4), 0 0 0 0 rgba(0,0,0,0.4) inset;
-    transition: box-shadow .1s ease-in-out, transform .1s ease-in-out;
-
-    &:active,&:hover {
-      outline: none;
-    }
-    &:active {
-      transform: scale(0.992);
-      box-shadow: 0 0 0 0 rgba(0,0,0,0.4), -0.5px 0.5px 1.5px 0 rgba(0,0,0,0.4) inset;
-    }
-
-    &.m-expand {
-      width: 100%;
-    }
-  }
-
-
-
-  // FONTS
-  .f-sz-xs {
-    font-size: 10px;
-    line-height:14px;
-  }
-  .f-sz-s {
-    font-size: 12px;
-    line-height:16px;
-  }
-  .f-sz {
-    font-size: 14px;
-    line-height:18px;
-  }
-  .f-sz-l {
-    font-size: 16px;
-    line-height:20px;
-  }
-  .f-sz-xl {
-    font-size: 18px;
-    line-height: 22px;
-  }
-
-  .f-upper {
-    text-transform: uppercase;
-  }
-
-  @each $colorName,$colorValue in $COLORS {
-    .f-c-#{$colorName} {
-      color: $colorValue
-    }
-  }
-
 
   $itemSide: 40px;
 
@@ -265,11 +108,11 @@ $COLORS: (
     }
   }
 
-}
+  .spin {
+    animation-name: spin;
+    animation-play-state: running;
+  }
 
-.spin {
-  animation-name: spin;
-  animation-play-state: running;
 }
 
 @keyframes spin {
