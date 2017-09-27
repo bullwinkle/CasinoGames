@@ -7,6 +7,3 @@ export Backbone from "backbone";
 export Marionette from "backbone.marionette";
 export Radio from 'backbone.radio';
 export ComputedFields from 'backbone-computedfields';
-
-export html2canvas from "html2canvas";
-export domtoimage from "dom-to-image";
