@@ -11,10 +11,15 @@ $COLORS: (
 
 .game-double {
 
+  & * {
+    box-sizing: border-box;
+  }
+
   &-container {
     padding: 10px;
     background-color: #e7edf1;
     color: map-get($COLORS,'base');
+    min-width: 600px;
   }
 
 
@@ -106,6 +111,7 @@ $COLORS: (
     //background-color: map-get($COLORS,'gray-l');
   }
   .s-btn {
+    display: inline-block;
     border-radius: 0px;
     font-size: 14px;
     line-height:22px;
@@ -170,6 +176,9 @@ $COLORS: (
     position: relative;
     border: 1px solid white;
     padding: 1px;
+    transform-style: preserve-3d;
+    // [DEBUG]
+    overflow: hidden;
   }
 
   .spinner-item {
@@ -183,6 +192,11 @@ $COLORS: (
     font-weight: 100;
   }
 
+  .spinner-cells {
+    width: 100%;
+    position: relative;
+  }
+
   .indicator {
     width: $itemSide;
     height: $itemSide;
@@ -190,6 +204,8 @@ $COLORS: (
     top: 0px;
     left: calc( 50% - #{$itemSide} / 2);
     border: 1px solid white;
+    z-index: 10;
+    background-color: rgba(255,255,255,0.3);
     &:before {
       content: "";
       position: absolute;
@@ -199,6 +215,18 @@ $COLORS: (
       left: 50%;
       z-index: 10;
     }
+  }
+
+  .animatable {
+    left: calc( -100% + 1px );
+    position: relative;
+
+    animation-duration: 9s;
+    animation-timing-function: cubic-bezier(0.36, 0.04, 0.18, 1);
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: initial;
+    animation-fill-mode: initial;
   }
 
   .bid-actions {
@@ -222,6 +250,10 @@ $COLORS: (
     }
   }
 
+  input:checked + .put-on-button {
+    outline: 2px solid red;
+  }
+
   .users-list {
     & > * {
       padding: 5px 8px 5px 2px;
@@ -233,4 +265,16 @@ $COLORS: (
     }
   }
 
+}
+
+.spin {
+  animation-name: spin;
+  animation-play-state: running;
+}
+
+@keyframes spin {
+  $count: 8;
+  to {
+    transform: translateX(-100% * $count);
+  }
 }

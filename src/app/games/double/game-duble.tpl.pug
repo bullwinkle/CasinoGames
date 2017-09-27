@@ -1,35 +1,82 @@
 .game-double-container.l-stack
 	.spinner
 		.indicator
-		.spinner-cells.l-flex
-			each el in range
-				- const className = `s-bg-${el.color}`
-				.spinner-item.l-flex-1(class=className)= el.value
+		.l-nowrap.animatable(animatable)
+			each i in new Array(11)
+				.spinner-cells.l-i-flex
+					each el in locals.range
+						- const className = `s-bg-${el.color}`
+						.spinner-item.l-flex-1(class=className)= el.value
+
+	button.animate animate
 
 	.bids.s-panel.s-bg-gray-l.l-stack
+		div Имя: #[span(property-binding="user.nickname")]
+
 		div.l-flex
 			div
-				.l-ib(style="margin-right:10px;") Ставка
-				input.l-h-100p(value=0)
+				.l-ib(style="margin-right:10px;") Ставка:
+
+				input.l-h-100p(
+					value=locals.currentBet
+					property-binding="currentBet"
+				)
+
 			.bid-actions.l-flex-1.l-i-flex.s-bd-base
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s Очистить
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s Последняя
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +10
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +100
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +500
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s +1000
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s 1/2
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s x2
-				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s Макс
-		div Баланс:
-			span 0
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="clean"
+				) Очистить
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="last"
+				) Последняя
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="+10"
+				) +10
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="+100"
+				) +100
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="+500"
+				) +500
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="+1000"
+				) +1000
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="1/2"
+				) 1/2
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="x2"
+				) x2
+				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
+					bet-action="max"
+				) Макс
+		div Баланс: #[span(property-binding="displayBalance") 0] руб.
+
 
 	.l-flex.m-centered
 
-		mixin column (from,to,upTo,count,color,colorWord,playersCount,playersTotal,users)
+		mixin column (from,to,upTo,count,color,colorWord,playersCount,playersTotal,putOn,users)
 			.l-flex-1.l-p.l-stack
-				button.s-btn.m-expand.l-nowrap.f-c-white(class='s-bg-'+color)= button
-					| #[b #{from}] До #[b #{to}], Победа #[b #{upTo||0}x]
+
+				- var inputId = 'radio-'+putOn;
+
+				input(
+					hidden
+					type="radio"
+					name="putOn"
+					value=putOn
+					id=inputId
+					property-binding="putOn"
+				)
+				label.s-btn.m-expand.l-nowrap.f-c-white.put-on-button(
+					class='s-bg-'+color
+					for=inputId
+				)= button
+					| #[b #{from}]
+					if to
+						|  До #[b #{to}]
+					| , Победа #[b #{upTo||0}x]
+
 				.count= count||0
 				.l-flex.s-panel.s-bg-white
 					div: img(src='#')
@@ -51,7 +98,7 @@
 
 
 
-		+column(2,7,2,0,'red','красное',8,10440,[
+		+column(1,7,2,0,'red','красное',8,10440,locals.PUT_ON.RED,[
 			{
 				name: 'foo',
 				icon: 'user.png',
@@ -63,7 +110,7 @@
 				count: 17600
 			}
 		])
-		+column(0,7,14,0,'green','зелёное',2,1860,[
+		+column(0,undefined,14,0,'green','зелёное',2,1860,locals.PUT_ON.GREEN,[
 			{
 				name: 'bar',
 				icon: 'user.png',
@@ -75,7 +122,7 @@
 				count: 5800
 			}
 		])
-		+column(1,8,2,0,'black','чёрное',14,18100,[
+		+column(8,14,2,0,'black','чёрное',14,18100,locals.PUT_ON.BLACK,[
 			{
 				name: 'baz',
 				icon: '',
@@ -87,5 +134,3 @@
 				count: 2140
 			}
 		])
-
-//pre= JSON.stringify(locals,null,2)
