@@ -5,27 +5,51 @@ const state = new GameDoubleModel();
 const user = new User();
 const users = new UserCollection([
 	{
-		name: 'foo',
+		name: 'one',
 		icon: 'currentUser.png',
-		count: 20000,
+		currentBet: 1998,
 		putOn: "red",
 	},
 	{
-		name: 'maz',
+		name: 'two',
 		icon: 'currentUser.png',
-		count: 17600,
+		currentBet: 17600,
 		putOn: "green",
 	},
 	{
-		name: 'baz',
+		name: 'three',
 		icon: 'currentUser.png',
-		count: 5600,
+		currentBet: 5600,
 		putOn: "black",
 	},
 	{
-		name: 'zav',
+		name: 'four',
 		icon: 'currentUser.png',
-		count: 2400,
+		currentBet: 2400,
+		putOn: "green",
+	},
+	{
+		name: 'five',
+		icon: 'currentUser.png',
+		currentBet: 20000,
+		putOn: "red",
+	},
+	{
+		name: 'six',
+		icon: 'currentUser.png',
+		currentBet: 27600,
+		putOn: "green",
+	},
+	{
+		name: 'seven',
+		icon: 'currentUser.png',
+		currentBet: 6400,
+		putOn: "black",
+	},
+	{
+		name: 'eight',
+		icon: 'currentUser.png',
+		currentBet: 3300,
 		putOn: "green",
 	},
 ]);

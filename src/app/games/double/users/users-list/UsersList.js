@@ -6,4 +6,19 @@ import {UserItem} from "../users-item/UserItem";
 	childView: UserItem,
 	className: 'users-list'
 })
-export class UsersList extends Marionette.CollectionView {}
+export class UsersList extends Marionette.CollectionView {
+	initialize () {
+		this.model = new Backbone.Model({
+			sortBy: 'currentBet', // | property name
+			order: 'desc' // asc | desc
+		});
+	}
+	viewComparator (a,b) {
+		const prop = this.model.get('sortBy');
+		const order = this.model.get('order');
+
+		if (a.get(prop) > b.get(prop)) return order === 'desc'? -1 : 1;
+		else if (a.get(prop) < b.get(prop)) return order === 'desc'? 1 : -1;
+		else if (a.get(prop) == b.get(prop)) return 0;
+	}
+}
