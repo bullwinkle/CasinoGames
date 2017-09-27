@@ -1,6 +1,6 @@
 import {Marionette} from "vendor";
 import {props} from "app/decorators";
-import {UserItem} from "./UserItem";
+import {UserItem} from "../users-item/UserItem";
 
 @props({
 	childView: UserItem,
