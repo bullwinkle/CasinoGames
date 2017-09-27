@@ -2,7 +2,7 @@ import {Backbone, Marionette, $, html2canvas, domtoimage} from 'vendor';
 import {props} from 'app/decorators';
 import {initBindings} from "app/shared/initBindings";
 import {User} from "./models/user";
-import {GameDoubleModel} from "./services/GameDouble";
+import {GameDoubleModel} from "./models/gameDouble";
 import {store} from "./store";
 import template from './game-duble.tpl.pug';
 import "./game-double.scss";

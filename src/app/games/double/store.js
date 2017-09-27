@@ -1,4 +1,4 @@
-import {GameDoubleModel} from "./services/GameDouble";
+import {GameDoubleModel} from "./models/gameDouble";
 
 const state = new GameDoubleModel();
 
