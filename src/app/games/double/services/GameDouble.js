@@ -1,7 +1,21 @@
 import {props} from "app/decorators";
 
+const STATUS = {
+	STOPPED: 0,
+	WAITING_FOR_BETS: 1,
+	IS_PLAYING_OUT: 2,
+	FINISH: 3,
+};
+
+const PUT_ON = {
+	RED: 'red',
+	BLACK: 'black',
+	GREEN: 'green'
+};
+
 @props({
 	defaults: {
+		status: STATUS.STOPPED,
 		range: [],
 		users: [],
 		// от 0 до 14) и случайное число от 0.01 до 0.99
@@ -9,9 +23,9 @@ import {props} from "app/decorators";
 		cellDecimal: 0,// 0.01 до 0.99
 		currentBet: 0,
 		putOn: '',
+		displayBalance: 10,
 		'user.balance': 0,
 		'user.nickname': '',
-		displayBalance: 10
 	},
 	computed: {
 		displayBalance: {
@@ -32,18 +46,13 @@ import {props} from "app/decorators";
 })
 export class GameDoubleModel extends Backbone.Model {
 
-	static get PUT_ON () {
-		return {
-			RED: 'red',
-			BLACK: 'black',
-			GREEN: 'green'
-		}
-	}
+	static get PUT_ON () { return PUT_ON }
+	static get STATUS () { return STATUS }
 
 	initialize () {
 		this.computedFields = new Backbone.ComputedFields(this);
 		this.set('range',this.generateRange())
-	}
+	};
 
 	generateRange () {
 		return new Array(15).fill(0)

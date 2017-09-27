@@ -37,9 +37,7 @@ const FAKE_USER = {
 	modelEvents: {
 		'change:cellNumber': 'updateSpinnerValue',
 		'change:cellDecimal': 'updateSpinnerValue',
-		'change:currentBet': (...args) => {
-			console.warn(...args)
-		}
+		'change:status': 'onStatusChange'
 	}
 })
 export class GameDouble extends Marionette.View {
@@ -59,23 +57,37 @@ export class GameDouble extends Marionette.View {
 		this.model = store.state;
 		this.user = new User();
 
-
 		this.listenTo(this.user, {
 			'change:balance': (m, value) => this.model.set({'user.balance': value}),
 			'change:nickname': (m, value) => this.model.set({'user.nickname': value}),
 		});
 
-		setInterval(() => {
-			this.model.set({
-				cellNumber: Math.floor(Math.random() * 14),
-				cellDecimal: Number(Math.random().toFixed(2))
-			})
-		}, 12000)
 	}
 
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);
 		this.user.set(FAKE_USER);
+		this.startGame();
+	}
+
+	reset () {
+		this.model.set({
+			putOn: '',
+			status: GameDoubleModel.STATUS.STOPPED
+		})
+	}
+
+	onStatusChange (m,status) {
+		const selector = 'input[name="putOn"], .bet-input, [bet-action]';
+		switch (status) {
+			case GameDoubleModel.STATUS.STOPPED:
+			case GameDoubleModel.STATUS.WAITING_FOR_BETS:
+				this.$el.find(selector).prop('disabled',false);
+				break;
+			default:
+				this.$el.find(selector).prop('disabled',true);
+				break;
+		}
 	}
 
 	onBetActionClick(e) {
@@ -85,7 +97,7 @@ export class GameDouble extends Marionette.View {
 				this.model.set('currentBet', 0);
 				break;
 			case "last":
-				this.model.set('currentBet', this.model.previous('currentBet'));
+				this.model.set('currentBet', this.model.get('currentBet_previous'));
 				break;
 			case "+10":
 				this.model.set('currentBet', this.model.get('currentBet') + 10);
@@ -146,7 +158,6 @@ export class GameDouble extends Marionette.View {
 		}, 2500)
 	}
 
-
 	stopAnimation() {
 		const isAnimationPlaying = this.ui.animatable.hasClass(ANIMATION_CLASS_NAME);
 
@@ -158,5 +169,66 @@ export class GameDouble extends Marionette.View {
 		setTimeout(() => {
 			this.ui.animatable.addClass(ANIMATION_CLASS_NAME);
 		})
+	}
+
+	startGame () {
+		if (this.model.get('status') !== GameDoubleModel.STATUS.STOPPED) return false;
+
+		this.model.set('status',GameDoubleModel.STATUS.WAITING_FOR_BETS);
+
+		setTimeout(()=>{
+			this.model.set({
+				status: GameDoubleModel.STATUS.IS_PLAYING_OUT,
+				cellNumber: Math.floor(Math.random() * 14),
+				cellDecimal: Number(Math.random().toFixed(2))
+			});
+
+			if (this.model.get('currentBet') && this.model.get('putOn')) {
+				this.model.set({
+					currentBet_previous: this.model.get('currentBet')
+				});
+			}
+
+
+			setTimeout(()=>{
+				this.model.set('status',GameDoubleModel.STATUS.FINISH);
+				const int = this.model.get('cellNumber');
+
+				const {win,k} = (()=>{
+					switch (this.model.get('putOn')) {
+						case GameDoubleModel.PUT_ON.RED: return {
+							win: (int >=1 && int < 8),
+							k: 2
+						};
+						case GameDoubleModel.PUT_ON.GREEN: return {
+							win: int === 0,
+							k: 14
+						};
+						case GameDoubleModel.PUT_ON.BLACK: return {
+							win: int >= 8 && int < 15,
+							k: 2
+						};
+						default: return {
+							win: false,
+							k:1
+						}
+					}
+				})();
+
+				if (win) this.user.set('balance',this.user.get('balance') + this.model.get('currentBet') * k );
+				else if (this.model.get('putOn')) {
+					this.user.set('balance',this.user.get('balance') - this.model.get('currentBet') )
+				}
+
+				setTimeout(()=>{
+					this.reset();
+
+					setTimeout(()=>{this.startGame()})
+
+				},5000)
+
+			},9000)
+
+		},10000)
 	}
 }

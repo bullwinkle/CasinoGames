@@ -17,12 +17,12 @@
 			div
 				.l-ib(style="margin-right:10px;") Ставка:
 
-				input.l-h-100p(
+				input.l-h-100p.bet-input(
 					value=locals.currentBet
 					property-binding="currentBet"
 				)
 
-			.bid-actions.l-flex-1.l-i-flex.s-bd-base
+			.bet-actions.l-flex-1.l-i-flex.s-bd-base
 				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
 					bet-action="clean"
 				) Очистить
@@ -52,6 +52,7 @@
 				) Макс
 		div Баланс: #[span(property-binding="displayBalance") 0] руб.
 
+	div status: #[span(property-binding="status")]
 
 	.l-flex.m-centered
 
