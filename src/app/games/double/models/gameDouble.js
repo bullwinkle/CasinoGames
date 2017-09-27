@@ -26,20 +26,21 @@ const PUT_ON = {
 		displayBalance: 10,
 		'user.balance': 0,
 		'user.nickname': '',
+		'user.currentBet': '',
 	},
 	computed: {
 		displayBalance: {
-			depends: ['user.balance','currentBet'],
+			depends: ['user.balance','user.currentBet'],
 			get: (fields) => {
 				const balance = parseFloat(fields['user.balance']) || 0;
-				const bet = parseFloat(fields['currentBet']) || 0;
+				const bet = parseFloat(fields['user.currentBet']) || 0;
 				return balance - bet;
 			}
 		},
 		currentBet: {
-			depends: ['currentBet'],
+			depends: ['user.currentBet'],
 			get: (fields) => {
-				return parseFloat(fields['currentBet']) || 0;
+				return parseFloat(fields['user.currentBet']) || 0;
 			}
 		}
 	}

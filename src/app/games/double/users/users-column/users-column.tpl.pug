@@ -1,0 +1,36 @@
+- var inputId = 'radio-'+locals.putOn;
+
+input(
+	hidden
+	type="radio"
+	name="putOn"
+	value=locals.putOn
+	id=inputId
+	property-binding-state="putOn"
+)
+label.s-btn.m-expand.l-nowrap.f-c-white.put-on-button(
+	class='s-bg-' + locals.color
+	for=inputId
+)= button
+	| #[b #{locals.from}]
+	if locals.to
+		|  До #[b #{locals.to}]
+	| , Победа #[b #{locals.upTo || 0}x]
+
+.count(property-binding="achieve") 0
+.l-flex.s-panel.s-bg-white
+	div: img(src='#')
+	.flex-1
+		.f-sz.f-upper(class=`f-c-${ locals.color }`) Наибольшее #{locals.colorWord}
+		.f-sz-s.f-black(property-binding="greatesUserName") Sucharexzekk
+		.f-sz-s.count(property-binding="greatestUserBet") 2000
+	div: img(src='#')
+
+.l-centered.l-center
+	.l-ib.s-bd-base.l-nowrap.f-sz-s.l-p-s
+		| #[b.f-c-red(property-binding="playersCount") 0 ]
+		| #[span.f-upper всего игроков: ]
+		| #[span(property-binding="playersTotal") 0]
+
+
+div(role="region" name="usersList")

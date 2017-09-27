@@ -41,14 +41,16 @@
   }
 
   .indicator {
-    width: $itemSide;
-    height: $itemSide;
+    width: $itemSide + 2;
+    height: $itemSide + 2;
     position: absolute;
-    top: 0px;
-    left: calc( 50% - #{$itemSide} / 2);
-    border: 1px solid white;
-    z-index: 10;
-    background-color: rgba(255,255,255,0.3);
+    top: 0;
+    left: calc(50% - 40px / 2);
+    border: 1px solid #fff;
+    z-index: 1;
+    background-color: hsla(0,0%,100%,.3);
+    box-shadow: 0px 0px 4px 2px rgba(255,255,255,0.55);
+
     &:before {
       content: "";
       position: absolute;
@@ -69,7 +71,7 @@
     animation-delay: 0s;
     animation-iteration-count: 1;
     animation-direction: initial;
-    animation-fill-mode: initial;
+    animation-fill-mode: both;
   }
 
   .bet-input {
@@ -77,6 +79,13 @@
     &:disabled {
       opacity: .5;
     }
+  }
+
+  [balance] {
+    transform: scale(1);
+    padding: 4px;
+    border-radius: 40px;
+    transition:transform .25s ease-in-out;
   }
 
   .bet-actions {

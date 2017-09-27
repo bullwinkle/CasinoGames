@@ -5,8 +5,6 @@
  * @param model Backbone.Model - модель, к которой биндиться по значению указанного атрибута {attrName}
  */
 export function initBindings ($el,attrName,model) {
-	if (initBindings.called) return;
-	initBindings.called = true;
 
 	const $allBindings = $el.find(`[${attrName}]`);
 

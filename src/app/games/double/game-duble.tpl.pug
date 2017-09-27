@@ -19,7 +19,7 @@
 
 				input.l-h-100p.bet-input(
 					value=locals.currentBet
-					property-binding="currentBet"
+					property-binding-user="currentBet"
 				)
 
 			.bet-actions.l-flex-1.l-i-flex.s-bd-base
@@ -50,88 +50,9 @@
 				button.s-btn.l-flex-1.s-bg-gray-l.l-p-xs.f-upper.f-sz-s(
 					bet-action="max"
 				) Макс
-		div Баланс: #[span(property-binding="displayBalance") 0] руб.
+		div Баланс: #[span.s-bg-gray-l.l-ib(property-binding="displayBalance" balance) 0] руб.
 
 	div status: #[span(property-binding="status")]
 
-	.l-flex.m-centered
 
-		mixin column (from,to,upTo,count,color,colorWord,playersCount,playersTotal,putOn,users)
-			.l-flex-1.l-p.l-stack
-
-				- var inputId = 'radio-'+putOn;
-
-				input(
-					hidden
-					type="radio"
-					name="putOn"
-					value=putOn
-					id=inputId
-					property-binding="putOn"
-				)
-				label.s-btn.m-expand.l-nowrap.f-c-white.put-on-button(
-					class='s-bg-'+color
-					for=inputId
-				)= button
-					| #[b #{from}]
-					if to
-						|  До #[b #{to}]
-					| , Победа #[b #{upTo||0}x]
-
-				.count= count||0
-				.l-flex.s-panel.s-bg-white
-					div: img(src='#')
-					.flex-1
-						.f-sz.f-upper(class=`f-c-${ color }`) Наибольшее #{colorWord}
-						.f-sz-s.f-black Sucharexzekk
-						.f-sz-s.count 2000
-					div: img(src='#')
-
-				.l-centered.l-center
-					.l-ib.s-bd-base.l-nowrap.f-sz-s.l-p-s
-						| #[b.f-c-red #{playersCount}] #[span.f-upper всего игроков:] #[span #{playersTotal}]
-
-				.users-list: each user in users
-					.l-flex
-						.user-icon: img(src=user.icon)
-						.l-flex-1: div= user.name
-						div= user.count
-
-
-
-		+column(1,7,2,0,'red','красное',8,10440,locals.PUT_ON.RED,[
-			{
-				name: 'foo',
-				icon: 'user.png',
-				count: 20000
-			},
-			{
-				name: 'maz',
-				icon: 'user.png',
-				count: 17600
-			}
-		])
-		+column(0,undefined,14,0,'green','зелёное',2,1860,locals.PUT_ON.GREEN,[
-			{
-				name: 'bar',
-				icon: 'user.png',
-				count: 850
-			},
-			{
-				name: 'vaf',
-				icon: 'user.png',
-				count: 5800
-			}
-		])
-		+column(8,14,2,0,'black','чёрное',14,18100,locals.PUT_ON.BLACK,[
-			{
-				name: 'baz',
-				icon: '',
-				count: 55000
-			},
-			{
-				name: 'huf',
-				icon: '',
-				count: 2140
-			}
-		])
+	div(role="region" name="users")

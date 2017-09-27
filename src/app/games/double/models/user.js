@@ -1,6 +1,7 @@
 import {props} from "app/decorators";
 
 @props({
+	urlRoot: '/currentUser',
 	defaults: {
 		id: 0,
 		nickname: '',
@@ -8,6 +9,7 @@ import {props} from "app/decorators";
 		$fullName: '',
 		firstName: '',
 		lastName: '',
+		currentBet: 10
 	},
 	computed: {
 		$fullName: {
@@ -27,3 +29,9 @@ export class User extends Backbone.Model {
 		this.computedFields = new Backbone.ComputedFields(this);
 	}
 }
+
+@props({
+	url: User.prototype.urlRoot,
+	model: User
+})
+export class UserCollection extends Backbone.Model {}
