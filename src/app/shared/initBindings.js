@@ -13,6 +13,7 @@ export function initBindings ($el,attrName,model) {
 	$allBindings.each((i,el)=>{
 		const $bindingEl = $(el);
 		const bindPropertyName = $bindingEl.attr(attrName);
+		const modelEventName = `change:${bindPropertyName}`;
 
 		switch ($bindingEl.prop('nodeName')) {
 			case "INPUT":
@@ -20,7 +21,7 @@ export function initBindings ($el,attrName,model) {
 
 				/*	MODEL -> UI */
 
-				model.on(`change:${bindPropertyName}`,(m,value=null,opts)=>{
+				model.on(modelEventName,(m,value=null,opts)=>{
 					switch ($bindingEl.prop('type')) {
 						case 'radio':
 							/* взять все с именем текущего,
@@ -45,7 +46,6 @@ export function initBindings ($el,attrName,model) {
 							$bindingEl.val(value);
 					}
 				});
-
 
 				/*	UI -> MODEL */
 
@@ -75,9 +75,14 @@ export function initBindings ($el,attrName,model) {
 				break;
 
 			default:
-				model.on(`change:${bindPropertyName}`,(m,value,opts)=>{
+				model.on(modelEventName,(m,value,opts)=>{
 					$(el).text(value);
 				});
 		}
+
+		/* тригернуть изменения модели чтобы вывести начальные значения */
+		setTimeout(()=>{
+			model.trigger(modelEventName,model,model.get(bindPropertyName))
+		},10);
 	});
 }
