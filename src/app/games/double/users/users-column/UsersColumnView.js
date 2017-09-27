@@ -5,19 +5,20 @@ import {GameDoubleModel} from "app/games/double/models/gameDouble";
 import {store} from "app/games/double/store";
 import {UsersList} from "../users-list/UsersList";
 
+const defaultOptions = {
+	from:0,
+	to:0,
+	upTo:0,
+	count:0,
+	color:'',
+	colorWord:'',
+	playersCount:10,
+	playersTotal:10000,
+	putOn:''
+};
+
 @props({
-	defaults: {
-		from:0,
-		to:0,
-		upTo:0,
-		count:0,
-		color:'',
-		colorWord:'',
-		playersCount:10,
-		playersTotal:10000,
-		putOn:'',
-		users:''
-	}
+	defaults: defaultOptions
 })
 class Model extends Backbone.Model {}
 
@@ -31,18 +32,10 @@ class Model extends Backbone.Model {}
 	events: {},
 	modelEvents: {},
 	options: {
-		from:0,
-		to:0,
-		upTo:0,
-		count:0,
-		color:'',
-		colorWord:'',
-		playersCount:20,
-		playersTotal:2000,
-
+		...defaultOptions,
 		achieve: 0,
 		collection: null,
-		collectionFilter: () => {}
+		collectionFilter: () => true
 	}
 })
 export class GameDoubleUsersColumnView extends Marionette.View {
@@ -57,6 +50,7 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 
 	initialize() {
 		this.model = new Model(this.options);
+		this.collection = this.options.collection;
 	}
 
 	onRender() {

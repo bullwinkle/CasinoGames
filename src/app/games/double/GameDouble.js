@@ -59,8 +59,8 @@ export class GameDouble extends Marionette.View {
 		this.updateSpinnerValue = _.debounce(this.updateSpinnerValue);
 
 		this.model = store.state;
-		this.currentUser = new User();
-		this.usersCollection = new UserCollection();
+		this.currentUser = store.user;
+		this.usersCollection = store.users;
 
 		this.usersView = new GameDoubleUsersView({
 			collection: this.usersCollection

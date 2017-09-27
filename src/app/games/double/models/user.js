@@ -3,13 +3,14 @@ import {props} from "app/decorators";
 @props({
 	urlRoot: '/currentUser',
 	defaults: {
-		id: 0,
+		// id: 0,
 		nickname: '',
 		balance: 0,
 		$fullName: '',
 		firstName: '',
 		lastName: '',
-		currentBet: 10
+		currentBet: 10,
+		putOn: ''
 	},
 	computed: {
 		$fullName: {
@@ -34,4 +35,4 @@ export class User extends Backbone.Model {
 	url: User.prototype.urlRoot,
 	model: User
 })
-export class UserCollection extends Backbone.Model {}
+export class UserCollection extends Backbone.Collection {}

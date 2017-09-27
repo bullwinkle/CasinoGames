@@ -27,34 +27,41 @@ export class GameDoubleUsersView extends Marionette.View {
 	}
 
 	initialize() {
+		window.users = this;
 		this.model = new Backbone.Model({})
+
+		const usersCollection = this.usersCollection = store.users;
+		this.collections = {
+			red: new store.users.constructor(),
+			green: new store.users.constructor(),
+			black: new store.users.constructor(),
+		};
+
+		const debounced = _.debounce(this.syncCollections.bind(this));
+
+		this.listenTo(usersCollection,'add remove reset change',debounced);
+
+	}
+
+	syncCollections () {
+		const collections = this.usersCollection.reduce((result,user,i,arr)=>{
+			switch (user.get('putOn')) {
+				case GameDoubleModel.PUT_ON.RED: result.red.push(user); break;
+				case GameDoubleModel.PUT_ON.GREEN: result.green.push(user); break;
+				case GameDoubleModel.PUT_ON.BLACK: result.black.push(user); break;
+			}
+			return result;
+		},{red:[],green:[],black:[]});
+		for (let key in collections) {
+			const ar = collections[key];
+			console.log(ar);
+			this.collections[key].reset(ar)
+		}
 	}
 
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);
-
-		const usersCollection = new Backbone.Collection([
-			{
-				name: 'foo',
-				icon: 'currentUser.png',
-				count: 20000
-			},
-			{
-				name: 'maz',
-				icon: 'currentUser.png',
-				count: 17600
-			},
-			{
-				name: 'baz',
-				icon: 'currentUser.png',
-				count: 5600
-			},
-			{
-				name: 'zav',
-				icon: 'currentUser.png',
-				count: 2400
-			},
-		]);
+		this.syncCollections();
 
 		const usersColumnRedView = new GameDoubleUsersColumnView({
 			from:1,
@@ -62,11 +69,8 @@ export class GameDoubleUsersView extends Marionette.View {
 			upTo:2,
 			color:'red',
 			colorWord:'красное',
-			putOn:GameDoubleModel.PUT_ON.RED,
-			collection:usersCollection,
-			collectionFilter: () => {
-
-			}
+			putOn: GameDoubleModel.PUT_ON.RED,
+			collection: this.collections.red
 		});
 
 		const usersColumnGreenView = new GameDoubleUsersColumnView({
@@ -76,10 +80,7 @@ export class GameDoubleUsersView extends Marionette.View {
 			color:'green',
 			colorWord:'зелёное',
 			putOn:GameDoubleModel.PUT_ON.GREEN,
-			collection:usersCollection,
-			collectionFilter: () => {
-
-			}
+			collection: this.collections.green
 		});
 
 		const usersColumnBlackView = new GameDoubleUsersColumnView({
@@ -89,11 +90,9 @@ export class GameDoubleUsersView extends Marionette.View {
 			color:'black',
 			colorWord:'чёрное',
 			putOn:GameDoubleModel.PUT_ON.BLACK,
-			collection:usersCollection,
-			collectionFilter: () => {
-
-			}
+			collection: this.collections.black
 		});
+
 
 		this.showChildView('usersColumnRed',usersColumnRedView);
 		this.showChildView('usersColumnGreen',usersColumnGreenView);

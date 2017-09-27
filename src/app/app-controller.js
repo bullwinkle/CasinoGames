@@ -2,7 +2,7 @@ import { Radio } from '../vendor';
 
 const appChannel = Radio.channel('app');
 
-import { GameDouble } from './games/double/game-double'
+import { GameDouble } from './games/double/GameDouble'
 import { NotFound } from './not-found/notfound'
 import {Home} from "./home/Home";
 
