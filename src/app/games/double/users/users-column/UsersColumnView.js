@@ -12,8 +12,10 @@ const defaultOptions = {
 	count:0,
 	color:'',
 	colorWord:'',
-	playersCount:10,
+	playersCount:101,
 	playersTotal:10000,
+	greatesUserName: '',
+	greatestUserBet: 0,
 	putOn:''
 };
 
@@ -35,7 +37,6 @@ class Model extends Backbone.Model {}
 		...defaultOptions,
 		achieve: 0,
 		collection: null,
-		collectionFilter: () => true
 	}
 })
 export class GameDoubleUsersColumnView extends Marionette.View {
@@ -51,11 +52,31 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 	initialize() {
 		this.model = new Model(this.options);
 		this.collection = this.options.collection;
+
+		this.listenTo(this.collection,'add remove reset change',()=>{
+
+			const {playersTotal,greatestUser} = this.collection.reduce((result,user,i)=>{
+				result.playersTotal+=user.get('currentBet')
+				if (!result.greatestUser || result.greatestUser.get('currentBet') < user.get('currentBet')) {
+					result.greatestUser = user;
+				}
+				return result;
+			},{playersTotal:0,greatestUser:null});
+
+			console.warn(greatestUser);
+			this.model.set({
+				playersCount: this.collection.length,
+				playersTotal: playersTotal,
+				greatesUserName: greatestUser && greatestUser.get('name'),
+				greatestUserBet: greatestUser && greatestUser.get('currentBet')
+			})
+		});
 	}
 
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);
 		initBindings(this.$el, 'property-binding-state', store.state);
+
 
 		// TODO fix
 		// this.options.collection.filter(this.options.collectionFilter)
@@ -64,6 +85,7 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 			collection: this.options.collection
 		}));
 
+		this.collection.trigger('change');
 		this.model.trigger('change');
 	}
 }

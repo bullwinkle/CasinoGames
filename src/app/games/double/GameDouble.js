@@ -5,6 +5,7 @@ import {User, UserCollection} from "./models/user";
 import {GameDoubleModel} from "./models/gameDouble";
 import {GameDoubleUsersView} from "./users/UsersView";
 import {store} from "./store";
+import {usersMock} from "./users/usersMock";
 
 const ANIMATION_CLASS_NAME = 'spin';
 
@@ -25,17 +26,12 @@ const FAKE_USER = {
 	ui: {
 		animatable: '[animatable]',
 		spinnerCellsContainer: '.spinner-cells',
-		button: 'button.animate',
 		betAction: '[bet-action]',
 		balanceValue: '[balance]'
 	},
 	events: {
 		'animationend @ui.animatable': 'onAnimationEnd',
 		'animationstart @ui.animatable': 'onAnimationStart',
-		'click @ui.button': function () {
-			this.stopAnimation();
-			this.startAnimation();
-		},
 		'click @ui.betAction': 'onBetActionClick'
 	},
 	modelEvents: {
@@ -88,20 +84,22 @@ export class GameDouble extends Marionette.View {
 		this.model.set({
 			putOn: '',
 			status: GameDoubleModel.STATUS.STOPPED
-		})
+		});
+
+		this.usersCollection.reset();
 	}
 
 	onStatusChange (m,status) {
 		const selector = 'input[name="putOn"], .bet-input, [bet-action]';
-		// switch (status) {
-		// 	case GameDoubleModel.STATUS.STOPPED:
-		// 	case GameDoubleModel.STATUS.WAITING_FOR_BETS:
-		// 		this.$el.find(selector).prop('disabled',false);
-		// 		break;
-		// 	default:
-		// 		this.$el.find(selector).prop('disabled',true);
-		// 		break;
-		// }
+		switch (status) {
+			case GameDoubleModel.STATUS.STOPPED:
+			case GameDoubleModel.STATUS.WAITING_FOR_BETS:
+				this.$el.find(selector).prop('disabled',false);
+				break;
+			default:
+				this.$el.find(selector).prop('disabled',true);
+				break;
+		}
 	}
 
 	onBetActionClick(e) {
@@ -189,6 +187,11 @@ export class GameDouble extends Marionette.View {
 
 		this.model.set('status',GameDoubleModel.STATUS.WAITING_FOR_BETS);
 
+		const usersMockClone = [...usersMock];
+		const pushUserInterval = setInterval(()=>{
+			this.usersCollection.push(usersMockClone.splice(Math.floor(Math.random()*usersMockClone.length),1))
+		},9500/usersMockClone.length);
+
 		setTimeout(()=>{
 			this.startAnimation();
 		},9000);
@@ -208,9 +211,6 @@ export class GameDouble extends Marionette.View {
 					currentBet_previous: this.model.get('currentBet')
 				});
 			}
-
-
-
 
 			setTimeout(()=>{
 				this.model.set('status',GameDoubleModel.STATUS.FINISH);

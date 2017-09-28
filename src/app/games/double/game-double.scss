@@ -127,14 +127,19 @@
 
   .users-list {
     & > * {
-      padding: 5px 8px 5px 2px;
-      background-image: linear-gradient(to right,transparent 20%,rgba(0,0,0,0.2));
-      margin-bottom: 5px;
+      overflow: hidden;
+      transition: height .2s ease-in-out;
+      & > * {
+        background-image: linear-gradient(to right,transparent 20%,rgba(0,0,0,0.2));
+        padding: 5px 8px 5px 2px;
+        margin-bottom: 5px;
+      }
     }
-    & > *:not(:last-child) {
+    & > *:not(:last-child) > * {
       border-bottom: 1px solid lighten(map-get($COLORS,'base'),20%);
     }
   }
+
 
   .spin {
     animation-name: spin;

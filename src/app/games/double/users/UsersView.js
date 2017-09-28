@@ -44,20 +44,24 @@ export class GameDoubleUsersView extends Marionette.View {
 	}
 
 	syncCollections () {
-		const collections = this.usersCollection.reduce((result,user,i,arr)=>{
+		const collections = this.usersCollection.reduce((result, user, i, arr) => {
 			switch (user.get('putOn')) {
-				case GameDoubleModel.PUT_ON.RED: result.red.push(user); break;
-				case GameDoubleModel.PUT_ON.GREEN: result.green.push(user); break;
-				case GameDoubleModel.PUT_ON.BLACK: result.black.push(user); break;
+				case GameDoubleModel.PUT_ON.RED:
+					result.red.push(user);
+					break;
+				case GameDoubleModel.PUT_ON.GREEN:
+					result.green.push(user);
+					break;
+				case GameDoubleModel.PUT_ON.BLACK:
+					result.black.push(user);
+					break;
 			}
 			return result;
-		},{red:[],green:[],black:[]});
-		for (let key in collections) {
-			const ar = collections[key];
-			console.log(ar);
-			this.collections[key].reset(ar)
-		}
+		}, {red: [], green: [], black: []});
+
+		for (let key in collections) this.collections[key].set(collections[key])
 	}
+
 
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);

@@ -4,7 +4,8 @@ import {UserItem} from "../users-item/UserItem";
 
 @props({
 	childView: UserItem,
-	className: 'users-list'
+	className: 'users-list',
+	// reorderOnSort: true
 })
 export class UsersList extends Marionette.CollectionView {
 	initialize () {
