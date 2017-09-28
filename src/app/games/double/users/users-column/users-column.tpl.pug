@@ -18,14 +18,14 @@ label.s-btn.m-expand.l-nowrap.f-c-white.put-on-button(
 	| , Победа #[b #{locals.upTo || 0}x]
 
 .count(property-binding="playersTotal") 0
-.l-flex.m-centered.s-panel.s-bg-white
+.l-flex.m-centered.s-panel.s-bg-white(style="min-height:86px;")
 	div: img(
 		greatest-user-icon
 		width="60px"
 		height="60px"
 		style="margin-right: 10px;border-radius:100px; border:none;outline:none; background-color: transparent;"
 	)
-	.flex-1(style="min-height:94px;")
+	.flex-1(style="min-height:66px;")
 		.f-sz.f-upper(
 			class=`f-c-${ locals.color }`
 			style="margin-bottom: 4px;"

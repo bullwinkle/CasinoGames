@@ -69,7 +69,6 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 				return result;
 			},{playersTotal:0,greatestUser:null});
 
-			console.warn(greatestUser);
 			this.model.set({
 				playersCount: this.collection.length,
 				playersTotal: playersTotal,

@@ -153,8 +153,6 @@ export class GameDouble extends Marionette.View {
 		const offsetDecimal = cell.outerWidth() * cellDecimal;
 		const translateTo = parentsCenterPoint - (offsetInteger + offsetDecimal);
 
-		console.warn(cellNumber, cellDecimal, offsetDecimal);
-
 		setTimeout(() => {
 
 			this.ui.animatable.css('left', `calc(-100% + ${translateTo}px)`);

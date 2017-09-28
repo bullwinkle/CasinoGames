@@ -103,7 +103,6 @@ export class GameDoubleState extends Backbone.Model {
 							result.push(arr.pop())
 						}
 					}
-					console.log(arr.length)
 				}
 				return result;
 			},[])
