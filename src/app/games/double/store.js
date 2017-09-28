@@ -1,9 +1,16 @@
-import {GameDoubleModel} from "./models/gameDouble";
+import {GameDoubleState} from "./models/gameDoubleState";
 import {User, UserCollection} from "./models/user";
 
-const state = new GameDoubleModel();
+const state = new GameDoubleState();
 const user = new User();
 const users = new UserCollection();
+
+state.listenTo(user,"change",() => {
+	state.set(_.transform(user.toJSON(),(res,val,key)=>{
+		res[`user.${key}`] = val;
+		return res;
+	},{}))
+});
 
 class GameDoubleStore {
 	get user () { return user; }

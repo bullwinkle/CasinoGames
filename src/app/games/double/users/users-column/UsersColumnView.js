@@ -1,7 +1,7 @@
 import {Backbone, Marionette, $, html2canvas, domtoimage} from 'vendor';
 import {props} from 'app/decorators';
 import {initBindings} from "app/shared/initBindings";
-import {GameDoubleModel} from "app/games/double/models/gameDouble";
+import {GameDoubleState} from "app/games/double/models/gameDoubleState";
 import {store} from "app/games/double/store";
 import {UsersList} from "../users-list/UsersList";
 
@@ -14,7 +14,7 @@ const defaultOptions = {
 	colorWord:'',
 	playersCount:101,
 	playersTotal:10000,
-	greatesUserName: '',
+	greatestUserName: '',
 	greatestUserBet: 0,
 	putOn:''
 };
@@ -30,9 +30,15 @@ class Model extends Backbone.Model {}
 		usersList: '[role=region][name=usersList]'
 	},
 	className: 'game-double_users-column l-stack',
-	ui: {},
+	ui: {
+		greatestUserIcon: '[greatest-user-icon]'
+	},
 	events: {},
-	modelEvents: {},
+	modelEvents: {
+		"change:greatestUserIcon": function (m,src='') {
+			this.ui.greatestUserIcon.attr('src',src);
+		}
+	},
 	options: {
 		...defaultOptions,
 		achieve: 0,
@@ -45,7 +51,7 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 		return {
 			...this.model.toJSON(),
 			...this.options,
-			PUT_ON: GameDoubleModel.PUT_ON
+			PUT_ON: GameDoubleState.PUT_ON
 		}
 	}
 
@@ -67,7 +73,8 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 			this.model.set({
 				playersCount: this.collection.length,
 				playersTotal: playersTotal,
-				greatesUserName: greatestUser && greatestUser.get('name'),
+				greatestUserIcon: greatestUser && greatestUser.get('icon'),
+				greatestUserName: greatestUser && greatestUser.get('name'),
 				greatestUserBet: greatestUser && greatestUser.get('currentBet')
 			})
 		});
@@ -76,10 +83,6 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);
 		initBindings(this.$el, 'property-binding-state', store.state);
-
-
-		// TODO fix
-		// this.options.collection.filter(this.options.collectionFilter)
 
 		this.showChildView('usersList', new UsersList({
 			collection: this.options.collection

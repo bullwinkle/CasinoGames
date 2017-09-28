@@ -1,7 +1,7 @@
 import {Backbone, Marionette, $, html2canvas, domtoimage} from 'vendor';
 import {props} from 'app/decorators';
 import {initBindings} from "app/shared/initBindings";
-import {GameDoubleModel} from "../models/gameDouble";
+import {GameDoubleState} from "../models/gameDoubleState";
 import {store} from "../store";
 import {GameDoubleUsersColumnView} from "./users-column/UsersColumnView";
 
@@ -22,7 +22,7 @@ export class GameDoubleUsersView extends Marionette.View {
 	serializeData() {
 		return {
 			...this.model.toJSON(),
-			PUT_ON: GameDoubleModel.PUT_ON,
+			PUT_ON: GameDoubleState.PUT_ON,
 		}
 	}
 
@@ -46,13 +46,13 @@ export class GameDoubleUsersView extends Marionette.View {
 	syncCollections () {
 		const collections = this.usersCollection.reduce((result, user, i, arr) => {
 			switch (user.get('putOn')) {
-				case GameDoubleModel.PUT_ON.RED:
+				case GameDoubleState.PUT_ON.RED:
 					result.red.push(user);
 					break;
-				case GameDoubleModel.PUT_ON.GREEN:
+				case GameDoubleState.PUT_ON.GREEN:
 					result.green.push(user);
 					break;
-				case GameDoubleModel.PUT_ON.BLACK:
+				case GameDoubleState.PUT_ON.BLACK:
 					result.black.push(user);
 					break;
 			}
@@ -73,7 +73,7 @@ export class GameDoubleUsersView extends Marionette.View {
 			upTo:2,
 			color:'red',
 			colorWord:'красное',
-			putOn: GameDoubleModel.PUT_ON.RED,
+			putOn: GameDoubleState.PUT_ON.RED,
 			collection: this.collections.red
 		});
 
@@ -83,7 +83,7 @@ export class GameDoubleUsersView extends Marionette.View {
 			upTo:14,
 			color:'green',
 			colorWord:'зелёное',
-			putOn:GameDoubleModel.PUT_ON.GREEN,
+			putOn:GameDoubleState.PUT_ON.GREEN,
 			collection: this.collections.green
 		});
 
@@ -93,7 +93,7 @@ export class GameDoubleUsersView extends Marionette.View {
 			upTo:2,
 			color:'black',
 			colorWord:'чёрное',
-			putOn:GameDoubleModel.PUT_ON.BLACK,
+			putOn:GameDoubleState.PUT_ON.BLACK,
 			collection: this.collections.black
 		});
 

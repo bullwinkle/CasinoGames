@@ -17,20 +17,27 @@ label.s-btn.m-expand.l-nowrap.f-c-white.put-on-button(
 		|  До #[b #{locals.to}]
 	| , Победа #[b #{locals.upTo || 0}x]
 
-.count(property-binding="achieve") 0
-.l-flex.s-panel.s-bg-white
-	div: img(src='#')
-	.flex-1(style="min-height:72px;")
-		.f-sz.f-upper(class=`f-c-${ locals.color }`) Наибольшее #{locals.colorWord}
-		.f-sz-s.f-black(property-binding="greatesUserName") Sucharexzekk
+.count(property-binding="playersTotal") 0
+.l-flex.m-centered.s-panel.s-bg-white
+	div: img(
+		greatest-user-icon
+		width="60px"
+		height="60px"
+		style="margin-right: 10px;border-radius:100px; border:none;outline:none; background-color: transparent;"
+	)
+	.flex-1(style="min-height:94px;")
+		.f-sz.f-upper(
+			class=`f-c-${ locals.color }`
+			style="margin-bottom: 4px;"
+			) Наибольшее #{locals.colorWord}
+		.f-sz-s.f-black(property-binding="greatestUserName") Sucharexzekk
 		.f-sz-s.count(property-binding="greatestUserBet") 2000
 	div: img(src='#')
 
 .l-centered.l-center
 	.l-ib.s-bd-base.l-nowrap.f-sz-s.l-p-s
-		| #[b.f-c-red(property-binding="playersCount") 0 ]
 		| #[span.f-upper всего игроков: ]
-		| #[span(property-binding="playersTotal") 0]
+		| #[b.f-c-red(property-binding="playersCount") 0 ]
 
 
 div(role="region" name="usersList")

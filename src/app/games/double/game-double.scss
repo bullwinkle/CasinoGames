@@ -141,6 +141,10 @@
   }
 
 
+  [greatest-user-icon]:not([src]) {
+    visibility: hidden;
+  }
+
   .spin {
     animation-name: spin;
     animation-play-state: running;

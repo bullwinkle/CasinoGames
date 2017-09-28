@@ -42,10 +42,22 @@ const PUT_ON = {
 			get: (fields) => {
 				return parseFloat(fields['user.currentBet']) || 0;
 			}
+		},
+		statusName: {
+			depends: ['status'],
+			get: fields => {
+				switch (fields.status) {
+					case STATUS.STOPPED: return 'Игра остановлена';
+					case STATUS.WAITING_FOR_BETS: return 'Ставки принимаются!';
+					case STATUS.IS_PLAYING_OUT: return 'Ставки сделаны.';
+					case STATUS.FINISH: return 'Раунд окончен.';
+					default: return '';
+				}
+			}
 		}
 	}
 })
-export class GameDoubleModel extends Backbone.Model {
+export class GameDoubleState extends Backbone.Model {
 
 	static get PUT_ON () { return PUT_ON }
 	static get STATUS () { return STATUS }

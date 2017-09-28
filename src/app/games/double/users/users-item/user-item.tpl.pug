@@ -1,4 +1,5 @@
-div: .l-flex
-	.user-icon: img(src=locals.icon)
+div: .l-flex.m-centered
+	.user-icon(style="margin-right:5px;")
+		img(width="20px" height="20px" src=locals.icon)
 	.l-flex-1: div= locals.name
-	div= locals.currentBet
+	div(property-binding="currentBet")= locals.currentBet

@@ -2,7 +2,7 @@ import {Backbone, Marionette, $, html2canvas, domtoimage} from 'vendor';
 import {props} from 'app/decorators';
 import {initBindings} from "app/shared/initBindings";
 import {User, UserCollection} from "./models/user";
-import {GameDoubleModel} from "./models/gameDouble";
+import {GameDoubleState} from "./models/gameDoubleState";
 import {GameDoubleUsersView} from "./users/UsersView";
 import {store} from "./store";
 import {usersMock} from "./users/usersMock";
@@ -45,7 +45,7 @@ export class GameDouble extends Marionette.View {
 	serializeData() {
 		return {
 			...this.model.toJSON(),
-			PUT_ON: GameDoubleModel.PUT_ON
+			PUT_ON: GameDoubleState.PUT_ON
 		}
 	}
 
@@ -61,13 +61,6 @@ export class GameDouble extends Marionette.View {
 		this.usersView = new GameDoubleUsersView({
 			collection: this.usersCollection
 		});
-
-		this.listenTo(this.currentUser, {
-			'change:balance': (m, value) => this.model.set({'user.balance': value}),
-			'change:nickname': (m, value) => this.model.set({'user.nickname': value}),
-			'change:currentBet': (m, value) => this.model.set({'user.currentBet': value}),
-		});
-
 	}
 
 	onRender() {
@@ -83,7 +76,7 @@ export class GameDouble extends Marionette.View {
 	reset () {
 		this.model.set({
 			putOn: '',
-			status: GameDoubleModel.STATUS.STOPPED
+			status: GameDoubleState.STATUS.STOPPED
 		});
 
 		this.usersCollection.reset();
@@ -92,8 +85,8 @@ export class GameDouble extends Marionette.View {
 	onStatusChange (m,status) {
 		const selector = 'input[name="putOn"], .bet-input, [bet-action]';
 		switch (status) {
-			case GameDoubleModel.STATUS.STOPPED:
-			case GameDoubleModel.STATUS.WAITING_FOR_BETS:
+			case GameDoubleState.STATUS.STOPPED:
+			case GameDoubleState.STATUS.WAITING_FOR_BETS:
 				this.$el.find(selector).prop('disabled',false);
 				break;
 			default:
@@ -183,9 +176,9 @@ export class GameDouble extends Marionette.View {
 	}
 
 	startGame () {
-		if (this.model.get('status') !== GameDoubleModel.STATUS.STOPPED) return false;
+		if (this.model.get('status') !== GameDoubleState.STATUS.STOPPED) return false;
 
-		this.model.set('status',GameDoubleModel.STATUS.WAITING_FOR_BETS);
+		this.model.set('status',GameDoubleState.STATUS.WAITING_FOR_BETS);
 
 		const usersMockClone = [...usersMock];
 		const pushUserInterval = setInterval(()=>{
@@ -197,7 +190,7 @@ export class GameDouble extends Marionette.View {
 		},9000);
 
 		setTimeout(()=>{
-			this.model.set('status', GameDoubleModel.STATUS.IS_PLAYING_OUT);
+			this.model.set('status', GameDoubleState.STATUS.IS_PLAYING_OUT);
 
 			setTimeout(()=>{
 				this.model.set({
@@ -213,20 +206,21 @@ export class GameDouble extends Marionette.View {
 			}
 
 			setTimeout(()=>{
-				this.model.set('status',GameDoubleModel.STATUS.FINISH);
+				this.model.set('status',GameDoubleState.STATUS.FINISH);
 				const int = this.model.get('cellNumber');
 
-				const {win,k} = (()=>{
-					switch (this.model.get('putOn')) {
-						case GameDoubleModel.PUT_ON.RED: return {
+				const betWasMade = !!this.currentUser.get('putOn');
+				function isWinnerFn(userModel) {
+					switch (userModel.get('putOn')) {
+						case GameDoubleState.PUT_ON.RED: return {
 							win: (int >=1 && int < 8),
 							k: 2
 						};
-						case GameDoubleModel.PUT_ON.GREEN: return {
+						case GameDoubleState.PUT_ON.GREEN: return {
 							win: int === 0,
 							k: 14
 						};
-						case GameDoubleModel.PUT_ON.BLACK: return {
+						case GameDoubleState.PUT_ON.BLACK: return {
 							win: int >= 8 && int < 15,
 							k: 2
 						};
@@ -235,12 +229,25 @@ export class GameDouble extends Marionette.View {
 							k:1
 						}
 					}
-				})();
-
-				if (win) this.currentUser.set('balance',this.currentUser.get('balance') + this.currentUser.get('currentBet') * k );
-				else if (this.model.get('putOn')) {
-					this.currentUser.set('balance',this.currentUser.get('balance') - this.currentUser.get('currentBet') )
 				}
+
+				/* Update current user state */
+				if (betWasMade) {
+					const {win,k} = isWinnerFn(this.currentUser);
+					if (win) {
+						this.currentUser.set('balance',this.currentUser.get('balance') + this.currentUser.get('currentBet') * k );
+					} else {
+						this.currentUser.set('balance',this.currentUser.get('balance') - this.currentUser.get('currentBet') )
+					}
+				}
+
+				/* Update other users states*/
+				this.usersCollection.forEach(user=>{
+					const {win,k} = isWinnerFn(user);
+					const usersCurrentBet = user.get('currentBet');
+					if (win) user.set('currentBet',usersCurrentBet * k)
+				});
+
 
 				setTimeout(()=>{
 					this.reset();

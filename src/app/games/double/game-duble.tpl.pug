@@ -50,7 +50,8 @@
 				) Макс
 		div Баланс: #[span.s-bg-gray-l.l-ib(property-binding="displayBalance" balance) 0] руб.
 
-	div status: #[span(property-binding="status")]
+	//div status: #[span(property-binding="status")]
+	h2.l-center #[span(property-binding="statusName")]
 
 
 	div(role="region" name="users")
