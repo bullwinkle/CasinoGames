@@ -5,7 +5,7 @@ export class WebSocketApi {
 
 	get id () { return this.socket.id }
 
-	constructor (url=`http://0.0.0.0:${WEBSOCKET_PORT}`) {
+	constructor (url=`/`) {
 		this.socket = io(url,{
 			autoConnect: false
 		});
