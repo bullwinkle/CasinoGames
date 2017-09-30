@@ -207,7 +207,7 @@ export class GameDouble extends Marionette.View {
 				this.model.set('status',GameDoubleState.STATUS.FINISH);
 				const int = this.model.get('cellNumber');
 
-				const betWasMade = !!this.currentUser.get('putOn');
+				const betWasMade = !!this.model.get('putOn');
 				function isWinnerFn(userModel) {
 					switch (userModel.get('putOn')) {
 						case GameDoubleState.PUT_ON.RED: return {

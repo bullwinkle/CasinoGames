@@ -1,6 +1,7 @@
 const path = require("path");
 const root = process.cwd();
 const DEV = process.env.NODE_ENV === 'development';
+console.log(process.env)
 
 module.exports.PORT_HTTP = process.env.PORT || 3000;
 module.exports.PORT_WEBSOCKET = process.env.PORT || 3000;

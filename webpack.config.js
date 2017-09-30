@@ -70,6 +70,9 @@ module.exports = {
 			template: path.resolve('src', 'index.html'),
 			filename: 'index.html',
 			inject: false
+		}),
+		new webpack.DefinePlugin({
+			'process.env': JSON.stringify(process.env)
 		})
 	],
 	module: {
