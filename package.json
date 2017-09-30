@@ -38,6 +38,10 @@
     "webpack": "^2.2.0",
     "webpack-dev-server": "2.3.0"
   },
+  "engines": {
+    "node":"^8.5",
+    "npm":"^5.3"
+  },
   "author": "bullwinkle",
   "license": "ISC"
 }
