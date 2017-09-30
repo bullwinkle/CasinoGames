@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Project boilerplate",
   "scripts": {
-    "start": "./node_modules/.bin/webpack-dev-server",
+    "start": "node ./server",
     "stop": "kill $(lsof -t -i :9000)"
   },
   "dependencies": {

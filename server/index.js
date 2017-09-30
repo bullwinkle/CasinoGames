@@ -1,16 +1,33 @@
-const {createServer} = require("http");
-const {WEBSOCKET_PORT} = require("../CONFIG");
-const SocketIoServer = require("socket.io");
-const httpServer = createServer();
+const path = require('path');
+const express = require('express');
+const {createServer,Server} = require("http");
+const createWsServer = require("socket.io");
 
-const socketIoServer = new SocketIoServer(httpServer, {
-	path: '/',
+const {WEBSOCKET_PORT,PATH:{ROOT,DIST,SRC}} = require("../CONFIG");
+
+const app = express();
+const httpServer = Server(app);
+
+const socketIoServer = createWsServer(httpServer, {
 	serveClient: true,
 	// below are engine.IO options
 	pingInterval: 10000,
 	pingTimeout: 5000,
 	cookie: false
 }), io = socketIoServer;
+
+
+/* HTTP API */
+
+// SPA
+app.use(express.static(DIST));
+app.get('*', function (request, response) {
+	console.log('request');
+	response.sendFile(path.resolve(DIST, 'index.html'));
+});
+
+
+/* WebSocket API */
 
 io.on('connection', (socket) => {
 	console.log('\nSOCKET CONNECTION');
@@ -45,7 +62,10 @@ io.on('connection', (socket) => {
 	socket.on('my other event', function (data) {
 		console.log(data);
 	});
-
 });
 
-httpServer.listen(WEBSOCKET_PORT);
+
+
+httpServer.listen(WEBSOCKET_PORT, (...args) => {
+	console.log(`Server is listening on port = ${WEBSOCKET_PORT}`)
+});
