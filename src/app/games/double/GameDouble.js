@@ -129,11 +129,11 @@ export class GameDouble extends Marionette.View {
 	}
 
 	onAnimationStart(e) {
-		console.warn('onAnimationStart', e);
+		// console.warn('onAnimationStart', e);
 	}
 
 	onAnimationEnd(e) {
-		console.warn('onAnimationEnd', e);
+		// console.warn('onAnimationEnd', e);
 		this.ui.animatable.removeClass(ANIMATION_CLASS_NAME);
 	}
 

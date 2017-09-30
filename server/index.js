@@ -3,7 +3,7 @@ const express = require('express');
 const {createServer,Server} = require("http");
 const createWsServer = require("socket.io");
 
-const {PORT_HTTP,PATH_DIST} = require("../CONFIG");
+const {PORT_HTTP,PATH_DIST,WS_EVENTS} = require("../CONFIG");
 
 const app = express();
 const httpServer = Server(app);
@@ -28,6 +28,9 @@ app.get('*', function (request, response) {
 
 
 /* WebSocket API */
+const gameDoubleState = {
+	users: []
+};
 
 io.on('connection', (socket) => {
 	console.log('\nSOCKET CONNECTION');
@@ -36,32 +39,33 @@ io.on('connection', (socket) => {
 
 	socket.on('error', (error) => {
 		console.log('\nSOCKET ERROR');
-		console.log('connections:',Object.keys(io.clients().sockets).length);
+		console.log('connections:',Object.keys(io.clients().connected).length);
 		console.log('error',error,'\n');
+	});
+
+
+	socket.on('disconnecting', (reason) => {
+		console.log('\nSOCKET DISCONNECTING');
+		console.log('connections:',Object.keys(io.clients().connected).length);
+		console.log('reason:',reason,'\n');
 	});
 
 	socket.on('disconnect', (reason) => {
 		console.log('\nSOCKET DISCONNECT');
-		console.log('connections:',Object.keys(io.clients().sockets).length);
+		console.log('connections:',Object.keys(io.clients().connected).length);
 		console.log('reason:',reason,'\n');
+
+		gameDoubleState.users = getUsers(io);
+
+		socket.broadcast.emit(WS_EVENTS.DISCONNECTED, socketToJson(socket),gameDoubleState);
 	});
 
-	socket.on('disconnecting', (reason) => {
-		console.log('\nSOCKET DISCONNECTING');
-		console.log('connections:',Object.keys(io.clients().sockets).length);
-		console.log('reason:',reason,'\n');
-	});
+	gameDoubleState.users = getUsers(io);
 
+	socket.broadcast.emit(WS_EVENTS.CONNECTED, socketToJson(socket),gameDoubleState);
 
-	socket.emit('news', { hello: 'world' });
+	socket.send('hello, client')
 
-	let counter = 0;
-	setInterval(()=>{
-		socket.emit('event', { counter: counter++ });
-	},1000);
-	socket.on('my other event', function (data) {
-		console.log(data);
-	});
 });
 
 
@@ -69,3 +73,25 @@ io.on('connection', (socket) => {
 httpServer.listen(PORT_HTTP, (...args) => {
 	console.log(`Server is listening on port = ${PORT_HTTP}`)
 });
+
+
+
+
+
+
+
+function socketsToJson (sockets={}) {
+	return Object.keys(sockets).map(key=>socketToJson(sockets[key]));
+}
+
+function socketToJson(socket={}) {
+	return {
+		id: socket.id,
+		referrer: socket.request.connection.remoteAddress,
+		type: 'socket'
+	}
+}
+
+function getUsers (webSocketServer) {
+	return socketsToJson(webSocketServer.clients().connected);
+}

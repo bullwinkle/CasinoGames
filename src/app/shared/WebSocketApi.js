@@ -1,5 +1,5 @@
 import { io } from 'vendor';
-import { CONNECT_URL_WEBSOCKET } from "../../../CONFIG";
+import { CONNECT_URL_WEBSOCKET, WS_EVENTS } from "../../../CONFIG";
 
 export class WebSocketApi {
 
@@ -10,11 +10,14 @@ export class WebSocketApi {
 			autoConnect: false
 		});
 
-		this.socket.on('news', (data) => {
-			console.log(data);
-			this.socket.emit('my other event', { my: 'data' });
+
+		this.socket.on(WS_EVENTS.CONNECTED, (...data) => {
+			console.log('WS_EVENTS.CONNECTED',...data);
 		});
-		this.socket.on('event',function (obj) {console.log('WS EVENT!!',obj) })
+
+		this.socket.on(WS_EVENTS.DISCONNECTED, (...data) => {
+			console.log('WS_EVENTS.DISCONNECTED',...data);
+		});
 	}
 	connect () { return this.socket.open(); }
 
