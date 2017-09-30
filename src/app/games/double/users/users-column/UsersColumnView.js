@@ -19,6 +19,7 @@ const defaultOptions = {
 	putOn:''
 };
 
+
 @props({
 	defaults: defaultOptions
 })
@@ -81,7 +82,7 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);
-		initBindings(this.$el, 'property-binding-state', store.state);
+		initBindings(this.$el, 'property-binding-state', store.user);
 
 		this.showChildView('usersList', new UsersList({
 			collection: this.options.collection

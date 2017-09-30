@@ -1,3 +1,4 @@
+import {WS_EVENTS} from 'app/constants';
 import {Backbone, Marionette, $, html2canvas, domtoimage} from 'vendor';
 import {props} from 'app/decorators';
 import {initBindings} from "app/shared/initBindings";
@@ -15,6 +16,7 @@ const FAKE_USER = {
 	balance: 10000,
 	currentBet: 10
 };
+
 
 @props({
 	template: require('./game-duble.tpl.pug'),
@@ -61,6 +63,19 @@ export class GameDouble extends Marionette.View {
 		this.usersView = new GameDoubleUsersView({
 			collection: this.usersCollection
 		});
+
+
+		this.listenTo(this.model,'change:status',(m,status)=>{
+			switch (status) {
+				case GameDoubleState.STATUS.STOPPED:
+					this.currentUser.set({
+						putOn: ''
+					});
+
+					this.usersCollection.reset();
+					break;
+			}
+		});
 	}
 
 	onRender() {
@@ -70,16 +85,32 @@ export class GameDouble extends Marionette.View {
 		this.currentUser.set(FAKE_USER);
 		this.showChildView("users",this.usersView);
 
-		this.startGame();
+		// this.startGame();
+		this.initWebSocket();
+	}
+
+	initWebSocket () {
+		app.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,(payload)=>{
+			console.warn('WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED',payload)
+			const {users,...other} = payload;
+			this.model.set(other);
+		});
+
+		app.wsApi.on(WS_EVENTS.GAME_DOUBLE_USERS_CHANGED,(payload)=>{
+			console.warn('WS_EVENTS.GAME_DOUBLE_USERS_CHANGED',payload)
+			_.defer(()=>{
+				this.usersCollection.set(payload.users,{merge:true})
+			})
+		});
+		// App.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,(payload)=>{
+		// 	console.warn('WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED',payload)
+		// });
 	}
 
 	reset () {
 		this.model.set({
-			putOn: '',
 			status: GameDoubleState.STATUS.STOPPED
 		});
-
-		this.usersCollection.reset();
 	}
 
 	onStatusChange (m,status) {
@@ -197,9 +228,9 @@ export class GameDouble extends Marionette.View {
 				});
 			});
 
-			if (this.model.get('currentBet') && this.model.get('putOn')) {
+			if (this.currentUser.get('currentBet') && this.currentUser.get('putOn')) {
 				this.model.set({
-					currentBet_previous: this.model.get('currentBet')
+					currentBet_previous: this.currentUser.get('currentBet')
 				});
 			}
 
@@ -207,7 +238,7 @@ export class GameDouble extends Marionette.View {
 				this.model.set('status',GameDoubleState.STATUS.FINISH);
 				const int = this.model.get('cellNumber');
 
-				const betWasMade = !!this.model.get('putOn');
+				const betWasMade = !!this.currentUser.get('putOn');
 				function isWinnerFn(userModel) {
 					switch (userModel.get('putOn')) {
 						case GameDoubleState.PUT_ON.RED: return {

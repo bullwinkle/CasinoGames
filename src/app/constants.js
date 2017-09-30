@@ -1,3 +1,8 @@
+export {
+	CONNECT_URL_WEBSOCKET,
+	WS_EVENTS
+} from "../../CONFIG";
+
 export const EASING_EQUATIONS = {
 	easeOutSine: function(pos) {
 		return Math.sin(pos * Math.PI / 2);

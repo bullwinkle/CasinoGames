@@ -15,15 +15,13 @@ export class UserItem extends Marionette.View {
 	}
 
 	onDomRefresh () {
-		setTimeout(()=>{
-			this.$el.css('height','40px')
-		})
+		setTimeout(()=>{this.$el.css('height','40px')},20)
 	}
 
 	destroy (...args) {
 		this.$el.css('height','0px')
-		this.$el.one('transitionend',()=>{
+		setTimeout(()=>{
 			super.destroy(...args)
-		})
+		},210)
 	}
 }

@@ -1,7 +1,7 @@
 const path = require("path");
 const root = process.cwd();
+const PROD = process.env.NODE_ENV === 'production';
 const DEV = process.env.NODE_ENV === 'development';
-console.log(process.env)
 
 module.exports.PORT_HTTP = process.env.PORT || 3000;
 module.exports.PORT_WEBSOCKET = process.env.PORT || 3000;
@@ -15,5 +15,11 @@ module.exports.PATH_SRC = path.join(root,'src');
 
 module.exports.WS_EVENTS = {
 	DISCONNECTED: 'DISCONNECTED',
-	CONNECTED: 'CONNECTED'
+	CONNECTED: 'CONNECTED',
+	MESSAGE: 'message',
+
+	GAME_DOUBLE_STATUS_CHANGED: 'GAME_DOUBLE_STATUS_CHANGED',
+	GAME_DOUBLE_CELL_NUMBER_CHANGED: 'GAME_DOUBLE_CELL_NUMBER_CHANGED',
+	GAME_DOUBLE_CELL_DECIMAL_CHANGED: 'GAME_DOUBLE_CELL_DECIMAL_CHANGED',
+	GAME_DOUBLE_USERS_CHANGED: 'GAME_DOUBLE_USERS_CHANGED',
 };

@@ -1,9 +1,11 @@
+const {GameDoubleService} =  require("./GameDouble");
+
 const path = require('path');
 const express = require('express');
 const {createServer,Server} = require("http");
 const createWsServer = require("socket.io");
 
-const {PORT_HTTP,PATH_DIST,WS_EVENTS} = require("../CONFIG");
+const {PORT_HTTP,PATH_DIST,PATH_ROOT,WS_EVENTS} = require("../CONFIG");
 
 const app = express();
 const httpServer = Server(app);
@@ -21,6 +23,7 @@ const socketIoServer = createWsServer(httpServer, {
 
 // SPA
 app.use(express.static(PATH_DIST));
+app.use(express.static(path.join(PATH_ROOT,'src/assets')));
 app.get('*', function (request, response) {
 	console.log('request');
 	response.sendFile(path.resolve(PATH_DIST, 'index.html'));
@@ -28,46 +31,35 @@ app.get('*', function (request, response) {
 
 
 /* WebSocket API */
-const gameDoubleState = {
-	users: []
-};
 
 io.on('connection', (socket) => {
 	console.log('\nSOCKET CONNECTION');
-	console.log('connections:',Object.keys(io.clients().sockets).length);
+	console.log('connections:',getConnectionState(io).total);
 	console.log('headers:',JSON.stringify(socket.handshake.headers,null,2),'\n');
 
 	socket.on('error', (error) => {
 		console.log('\nSOCKET ERROR');
-		console.log('connections:',Object.keys(io.clients().connected).length);
+		console.log('connections:',getConnectionState(io).total);
 		console.log('error',error,'\n');
 	});
 
 
 	socket.on('disconnecting', (reason) => {
 		console.log('\nSOCKET DISCONNECTING');
-		console.log('connections:',Object.keys(io.clients().connected).length);
+		console.log('connections:',getConnectionState(io).total);
 		console.log('reason:',reason,'\n');
 	});
 
 	socket.on('disconnect', (reason) => {
 		console.log('\nSOCKET DISCONNECT');
-		console.log('connections:',Object.keys(io.clients().connected).length);
+		console.log('connections:',getConnectionState(io).total);
 		console.log('reason:',reason,'\n');
-
-		gameDoubleState.users = getUsers(io);
-
-		socket.broadcast.emit(WS_EVENTS.DISCONNECTED, socketToJson(socket),gameDoubleState);
 	});
 
-	gameDoubleState.users = getUsers(io);
+	socket.send('hello, client');
 
-	socket.broadcast.emit(WS_EVENTS.CONNECTED, socketToJson(socket),gameDoubleState);
-
-	socket.send('hello, client')
-
+	const game = new GameDoubleService({socket,io});
 });
-
 
 
 httpServer.listen(PORT_HTTP, (...args) => {
@@ -78,20 +70,8 @@ httpServer.listen(PORT_HTTP, (...args) => {
 
 
 
-
-
-function socketsToJson (sockets={}) {
-	return Object.keys(sockets).map(key=>socketToJson(sockets[key]));
-}
-
-function socketToJson(socket={}) {
+function getConnectionState (io) {
 	return {
-		id: socket.id,
-		referrer: socket.request.connection.remoteAddress,
-		type: 'socket'
+		total: Object.keys(io.clients().connected).length
 	}
-}
-
-function getUsers (webSocketServer) {
-	return socketsToJson(webSocketServer.clients().connected);
 }

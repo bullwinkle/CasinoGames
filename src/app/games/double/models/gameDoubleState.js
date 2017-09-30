@@ -21,8 +21,6 @@ const PUT_ON = {
 		// от 0 до 14) и случайное число от 0.01 до 0.99
 		cellNumber: 0, // от 0 до 14
 		cellDecimal: 0,// 0.01 до 0.99
-		currentBet: 0,
-		putOn: '',
 		displayBalance: 10,
 		'user.balance': 0,
 		'user.nickname': '',

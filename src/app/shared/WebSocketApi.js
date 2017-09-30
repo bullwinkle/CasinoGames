@@ -1,15 +1,15 @@
 import { io } from 'vendor';
-import { CONNECT_URL_WEBSOCKET, WS_EVENTS } from "../../../CONFIG";
+import { CONNECT_URL_WEBSOCKET, WS_EVENTS } from "app/constants";
 
 export class WebSocketApi {
 
 	get id () { return this.socket.id }
 
 	constructor (url=CONNECT_URL_WEBSOCKET) {
+
 		this.socket = io(url,{
 			autoConnect: false
 		});
-
 
 		this.socket.on(WS_EVENTS.CONNECTED, (...data) => {
 			console.log('WS_EVENTS.CONNECTED',...data);
@@ -17,6 +17,10 @@ export class WebSocketApi {
 
 		this.socket.on(WS_EVENTS.DISCONNECTED, (...data) => {
 			console.log('WS_EVENTS.DISCONNECTED',...data);
+		});
+
+		this.socket.on(WS_EVENTS.MESSAGE, (...data) => {
+			console.log('WS_EVENTS.MESSAGE',...data);
 		});
 	}
 	connect () { return this.socket.open(); }
