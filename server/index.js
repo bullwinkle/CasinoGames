@@ -3,7 +3,7 @@ const express = require('express');
 const {createServer,Server} = require("http");
 const createWsServer = require("socket.io");
 
-const {WEBSOCKET_PORT,PATH:{ROOT,DIST,SRC}} = require("../CONFIG");
+const {PORT_HTTP,PATH_DIST} = require("../CONFIG");
 
 const app = express();
 const httpServer = Server(app);
@@ -20,10 +20,10 @@ const socketIoServer = createWsServer(httpServer, {
 /* HTTP API */
 
 // SPA
-app.use(express.static(DIST));
+app.use(express.static(PATH_DIST));
 app.get('*', function (request, response) {
 	console.log('request');
-	response.sendFile(path.resolve(DIST, 'index.html'));
+	response.sendFile(path.resolve(PATH_DIST, 'index.html'));
 });
 
 
@@ -66,6 +66,6 @@ io.on('connection', (socket) => {
 
 
 
-httpServer.listen(WEBSOCKET_PORT, (...args) => {
-	console.log(`Server is listening on port = ${WEBSOCKET_PORT}`)
+httpServer.listen(PORT_HTTP, (...args) => {
+	console.log(`Server is listening on port = ${PORT_HTTP}`)
 });

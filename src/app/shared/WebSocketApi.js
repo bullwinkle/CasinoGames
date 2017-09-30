@@ -1,11 +1,11 @@
 import { io } from 'vendor';
-import { WEBSOCKET_PORT } from "../../../CONFIG";
+import { CONNECT_URL_WEBSOCKET } from "../../../CONFIG";
 
 export class WebSocketApi {
 
 	get id () { return this.socket.id }
 
-	constructor (url=`/`) {
+	constructor (url=CONNECT_URL_WEBSOCKET) {
 		this.socket = io(url,{
 			autoConnect: false
 		});
