@@ -4,6 +4,7 @@
   "description": "Project boilerplate",
   "scripts": {
     "start": "webpack && node ./server",
+    "start:dev": "webpack-dev-server",
     "stop": "kill $(lsof -t -i :9000)"
   },
   "dependencies": {
