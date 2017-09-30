@@ -1,0 +1,2 @@
+exports.WEBSOCKET_PORT = '3999';
+exports.WEBSERVER_PORT = '9000';

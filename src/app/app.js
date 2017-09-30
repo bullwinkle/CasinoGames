@@ -1,8 +1,9 @@
-import { Backbone, Marionette, $, Radio } from '../vendor';
+import { Backbone, Marionette, $, Radio, io } from '../vendor';
 import { props } from './decorators';
 import { RootView } from './root/root';
 import { AppState } from './app-state';
 import { AppRouter } from './app-router';
+import { WebSocketApi } from "./shared/WebSocketApi";
 
 const channel = new Radio.channel('app');
 
@@ -33,10 +34,13 @@ export class App extends Marionette.Application {
 		this.listenTo(this.router, 'route', ( name, args ) => {
 			this.state.set('route', { name, args });
 		});
-		this.channel.reply('update', this.update.bind(this))
+		this.channel.reply('update', this.update.bind(this));
+		this.wsApi = new WebSocketApi();
 	}
 
 	onStart() {
+		this.wsApi.connect();
+
 		this.showView(this.rootView);
 		Backbone.history.start({
 			pushState: true
@@ -68,7 +72,7 @@ export class App extends Marionette.Application {
 			} catch ( e ) {
 				reject(e);
 			}
-		})
+		});
 		this.updateStack.push(updatePromise);
 		const finallyCb = () => {
 			this.updateStack.splice(
