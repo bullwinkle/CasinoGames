@@ -15,7 +15,6 @@ function emit (io,event,...args) {
 module.exports.GameDoubleService = class GameDoubleService {
 	constructor({socket,io}){
 
-
 		if (GameDoubleService.instance) {
 			socket.emit(
 				WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,GameDoubleService.instance.gameDoubleState.toJSON()
@@ -24,25 +23,15 @@ module.exports.GameDoubleService = class GameDoubleService {
 		}
 		GameDoubleService.instance = this;
 
-
 		this.io = io;
-		this.gameDoubleState  = new GameDoubleState({io});
-
-		// socket.on('disconnect', (reason) => {
-		// 	// this.gameDoubleState.users = getUsers(io);
-		//
-		// 	socket.broadcast.emit(this.io,WS_EVENTS.DISCONNECTED, socketToJson(socket),this.gameDoubleState);
-		// });
-
-		// gameDoubleState.users = getUsers(io);
-
-
-		if (!GameDoubleService.gameStarted) {
-			GameDoubleService.gameStarted = true;
-		}
+		this.gameDoubleState = new GameDoubleState({io});
 
 		this.startGame();
 		this.startFakeUsersStream();
+
+		setInterval(() => {
+			emit(io,"CONNECTIONS",getUsers(io));
+		},2000)
 	}
 
 	startFakeUsersStream () {
@@ -57,12 +46,10 @@ module.exports.GameDoubleService = class GameDoubleService {
 
 			if (!tmpArr.length) {
 				const clone = usersMock.map(el=>({...el}));
-				console.log(clone);
 				tmpArr.push( ...clone  );
 			}
 			const randomIndex = Math.floor(Math.random()*tmpArr.length);
 			const randomUserFromList = tmpArr.splice(randomIndex,1)[0];
-			console.log(randomUserFromList,randomIndex);
 			if (randomUserFromList)
 				this.gameDoubleState.users.push(randomUserFromList);
 		},9500/tmpArr.length);
@@ -162,20 +149,21 @@ module.exports.GameDoubleService = class GameDoubleService {
 
 
 
-
-function socketsToJson (sockets={}) {
-	// const groubBy = 'referrer';
-	const groubBy = 'id';
+function transformSocketsToUsers(sockets={}) {
+	const groupBy = 'referrer';
 	return Object.keys(sockets)
 		.map( key => socketToJson(sockets[key]) )
 		.reduce((result,socketJson)=>{
-			result[socketJson[groubBy]] || (result[socketJson[groubBy]] = userDefaults());
-			const user = result[socketJson[groubBy]];
-			if (!user.id) user.id = socketJson[groubBy];
+			result[socketJson[groupBy]] || (result[socketJson[groupBy]] = userDefaults());
+			const user = result[socketJson[groupBy]];
+			if (!user.id) user.id = socketJson[groupBy];
 			user.connections || (user.connections = []);
 			user.connections.push(socketJson);
 			return result;
 		},{});
+}
+function getUsers (webSocketServer) {
+	return transformSocketsToUsers(webSocketServer.clients().connected);
 }
 
 function userDefaults () {
@@ -200,7 +188,7 @@ function socketToJson(socket={}) {
 }
 
 function getUsers (webSocketServer) {
-	return socketsToJson(webSocketServer.clients().connected);
+	return transformSocketsToUsers(webSocketServer.clients().connected);
 }
 
 function getConnectionState (io) {

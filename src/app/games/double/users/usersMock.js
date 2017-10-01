@@ -1,7 +1,7 @@
 module.exports.usersMock = [
 	{
 		id: 1,
-		name: 'one',
+		nickname: 'one',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 1998,
@@ -9,7 +9,7 @@ module.exports.usersMock = [
 	},
 	{
 		id: 2,
-		name: 'two',
+		nickname: 'two',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 17600,
@@ -17,7 +17,7 @@ module.exports.usersMock = [
 	},
 	{
 		id: 3,
-		name: 'three',
+		nickname: 'three',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 5600,
@@ -25,7 +25,7 @@ module.exports.usersMock = [
 	},
 	{
 		id: 4,
-		name: 'four',
+		nickname: 'four',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 2400,
@@ -33,7 +33,7 @@ module.exports.usersMock = [
 	},
 	{
 		id: 5,
-		name: 'five',
+		nickname: 'five',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 20000,
@@ -41,7 +41,7 @@ module.exports.usersMock = [
 	},
 	{
 		id: 6,
-		name: 'six',
+		nickname: 'six',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 27600,
@@ -49,7 +49,7 @@ module.exports.usersMock = [
 	},
 	{
 		id: 7,
-		name: 'seven',
+		nickname: 'seven',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 6400,
@@ -57,7 +57,7 @@ module.exports.usersMock = [
 	},
 	{
 		id: 8,
-		name: 'eight',
+		nickname: 'eight',
 		icon: 'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
 		balance: 10000,
 		currentBet: 3300,
