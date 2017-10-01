@@ -1,4 +1,4 @@
-const {GameDoubleService} =  require("./GameDouble");
+const {GameDoubleService} =  require("./game-double/GameDouble");
 
 const path = require('path');
 const express = require('express');

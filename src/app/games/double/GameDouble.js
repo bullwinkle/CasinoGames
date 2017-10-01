@@ -65,15 +65,23 @@ export class GameDouble extends Marionette.View {
 		});
 
 
-		this.listenTo(this.model,'change:status',(m,status)=>{
-			switch (status) {
-				case GameDoubleState.STATUS.STOPPED:
-					this.currentUser.set({
-						putOn: ''
-					});
+		// this.listenTo(this.usersCollection,'add remove reset change',);
 
-					this.usersCollection.reset();
-					break;
+		this.listenTo(this.model,{
+			'change:status':(m,status)=> {
+				switch (status) {
+					case GameDoubleState.STATUS.STOPPED:
+						this.currentUser.set({
+							putOn: ''
+						});
+
+						this.usersCollection.reset();
+						break;
+				}
+			},
+			'change:isAnimating': (m,isAnimating) => {
+				if (isAnimating) this.startAnimation();
+				else this.stopAnimation();
 			}
 		});
 	}
@@ -90,17 +98,11 @@ export class GameDouble extends Marionette.View {
 	}
 
 	initWebSocket () {
-		app.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,(payload)=>{
-			console.warn('WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED',payload)
-			const {users,...other} = payload;
+		app.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,(state)=>{
+			console.warn('WS_EVENTS.GAME_DOUBLE_STATE_CHANGED',state)
+			const {users,...other} = state;
 			this.model.set(other);
-		});
-
-		app.wsApi.on(WS_EVENTS.GAME_DOUBLE_USERS_CHANGED,(payload)=>{
-			console.warn('WS_EVENTS.GAME_DOUBLE_USERS_CHANGED',payload)
-			_.defer(()=>{
-				this.usersCollection.set(payload.users,{merge:true})
-			})
+			this.usersCollection.set(users,{merge:true})
 		});
 		// App.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,(payload)=>{
 		// 	console.warn('WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED',payload)
@@ -165,7 +167,7 @@ export class GameDouble extends Marionette.View {
 
 	onAnimationEnd(e) {
 		// console.warn('onAnimationEnd', e);
-		this.ui.animatable.removeClass(ANIMATION_CLASS_NAME);
+		// this.ui.animatable.removeClass(ANIMATION_CLASS_NAME);
 	}
 
 	updateSpinnerValue() {
@@ -174,7 +176,7 @@ export class GameDouble extends Marionette.View {
 			'cellNumber',
 			'cellDecimal'
 		]);
-		this.startAnimation();
+		// this.startAnimation();
 
 		const containerEl = this.ui.spinnerCellsContainer.eq(1);
 		const cellIndex = range.findIndex(el => el.value === cellNumber);
@@ -184,11 +186,7 @@ export class GameDouble extends Marionette.View {
 		const offsetDecimal = cell.outerWidth() * cellDecimal;
 		const translateTo = parentsCenterPoint - (offsetInteger + offsetDecimal);
 
-		setTimeout(() => {
-
-			this.ui.animatable.css('left', `calc(-100% + ${translateTo}px)`);
-
-		}, 2500)
+		this.ui.animatable.css('left', `calc(-100% + ${translateTo}px)`);
 	}
 
 	stopAnimation() {

@@ -59,7 +59,9 @@ export class GameDoubleUsersView extends Marionette.View {
 			return result;
 		}, {red: [], green: [], black: []});
 
-		for (let key in collections) this.collections[key].set(collections[key])
+		_.defer(()=>{
+			for (let key in collections) this.collections[key].set(collections[key],{merge:true})
+		})
 	}
 
 

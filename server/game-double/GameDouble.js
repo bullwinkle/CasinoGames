@@ -1,102 +1,27 @@
-const {usersMock} = require("../src/app/games/double/users/usersMock");
+const lodash = require("lodash");
+const GameDoubleState = require("./State").GameDoubleState;
+const {
+	STATUS,
+	PUT_ON
+} = require("./constants");
+const {usersMock} = require("../../src/app/games/double/users/usersMock");
+const {WS_EVENTS} = require('../../CONFIG');
 
-const {WS_EVENTS} = require('../CONFIG');
-
-const STATUS = {
-	STOPPED: 0,
-	WAITING_FOR_BETS: 1,
-	IS_PLAYING_OUT: 2,
-	FINISH: 3,
-};
-
-const PUT_ON = {
-	RED: 'red',
-	BLACK: 'black',
-	GREEN: 'green'
-};
 
 function emit (io,event,...args) {
 	return io.sockets.emit(event,...args);
 }
 
-class Users extends Array {
-	constructor ({io,state},...arrayArgs) {
-		super(...arrayArgs)
-		this.io = io;
-		this.state = state;
-	}
-	push (...args) {
-		const result = super.push(...args);
-		emit(this.io,WS_EVENTS.GAME_DOUBLE_USERS_CHANGED,this.state.toJSON());
-		return result;
-	}
-
-	splice (...args) {
-		const result = super.splice(...args);
-		emit(this.io,WS_EVENTS.GAME_DOUBLE_USERS_CHANGED,this.state.toJSON());
-		return result;
-	}
-}
-
-class GameDoubleState {
-	constructor ({io}) {
-		this.io = io;
-		this._users = new Users({io,state:this})
-	}
-	get cellNumber () { return this._cellNumber }
-	set cellNumber (val) {
-		const result = this._cellNumber = val;
-		emit(this.io,WS_EVENTS.GAME_DOUBLE_CELL_NUMBER_CHANGED,this.toJSON());
-		return result;
-	}
-
-	get cellDecimal () { return this._cellDecimal }
-	set cellDecimal (val) {
-		const result = this._cellDecimal = val;
-		emit(this.io,WS_EVENTS.GAME_DOUBLE_CELL_DECIMAL_CHANGED,this.toJSON());
-		return result;
-	}
-
-	get status () { return this._status }
-	set status (val) {
-		const result = this._status = val;
-		emit(this.io,WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,this.toJSON());
-		return result;
-	}
-
-	get users () { return this._users }
-	set users (val) {
-		const result = this._users = val;
-		emit(this.io,WS_EVENTS.GAME_DOUBLE_USERS_CHANGED,this.toJSON());
-		return result;
-	}
-
-	reset () {
-		this.status = STATUS.STOPPED;
-		this.users.splice(0,this.users.length);
-	}
-
-	toJSON () {
-		return {
-			cellNumber:this.cellNumber,
-			cellDecimal:this.cellDecimal,
-			status:this.status,
-			users:this.users,
-		}
-	}
-}
-Object.assign(GameDoubleState.prototype,{
-	_cellNumber:0,
-	_cellDecimal:0,
-	_status: STATUS.STOPPED,
-	_users: [],
-});
-
-
 module.exports.GameDoubleService = class GameDoubleService {
-	constructor({io}){
+	constructor({socket,io}){
 
-		if (GameDoubleService.instance) return GameDoubleService.instance;
+
+		if (GameDoubleService.instance) {
+			socket.emit(
+				WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,GameDoubleService.instance.gameDoubleState.toJSON()
+			);
+			return GameDoubleService.instance
+		}
 		GameDoubleService.instance = this;
 
 
@@ -111,57 +36,68 @@ module.exports.GameDoubleService = class GameDoubleService {
 
 		// gameDoubleState.users = getUsers(io);
 
-		emit(this.io,WS_EVENTS.CONNECTED, this.gameDoubleState);
 
 		if (!GameDoubleService.gameStarted) {
 			GameDoubleService.gameStarted = true;
-			this.startGame();
 		}
 
-		if (!GameDoubleService.fakeUsersStreamStarted) {
-			GameDoubleService.fakeUsersStreamStarted = true;
-			this.startFakeUsersStream();
-		}
-
-
+		this.startGame();
+		this.startFakeUsersStream();
 	}
 
 	startFakeUsersStream () {
 		let tmpArr = usersMock.map(el=>({...el}));
+		let tmpArr1 = usersMock.map(el=>({...el}));
+		let tmpArr2 = usersMock.map(el=>({...el}));
 		GameDoubleService.fakeUsersStreamStarted = setInterval(()=>{
+
+			if (this.gameDoubleState.status !== STATUS.WAITING_FOR_BETS) {
+				return;
+			}
 
 			if (!tmpArr.length) {
 				const clone = usersMock.map(el=>({...el}));
-				console.log(clone)
+				console.log(clone);
 				tmpArr.push( ...clone  );
 			}
 			const randomIndex = Math.floor(Math.random()*tmpArr.length);
 			const randomUserFromList = tmpArr.splice(randomIndex,1)[0];
-			console.log(randomUserFromList,randomIndex)
-			if (randomUserFromList && this.gameDoubleState.status === STATUS.WAITING_FOR_BETS)
+			console.log(randomUserFromList,randomIndex);
+			if (randomUserFromList)
 				this.gameDoubleState.users.push(randomUserFromList);
 		},9500/tmpArr.length);
+
+		return GameDoubleService.fakeUsersStreamStarted;
 	}
 
 	startGame () {
-		console.log('[START GAME]')
+		console.log('[START GAME]');
 
 		if (this.gameDoubleState.status !== STATUS.STOPPED) return false;
-
 		this.gameDoubleState.status = STATUS.WAITING_FOR_BETS;
 
-		// setTimeout(()=>{
-		// 	this.startAnimation();
-		// },9000);
+		const sercretCellNumber = Math.floor(Math.random() * 14);
+		const sercretCellDecimal = Number(Math.random().toFixed(2));
+
+		const startGameThrougn = 10000;
+		const animateFor = 9000;
+		const updateResultAt = 3000;
+		const showResultsFor = 5000;
+
 
 		setTimeout(()=>{
 			this.gameDoubleState.status = STATUS.IS_PLAYING_OUT;
+			this.gameDoubleState.isAnimating = true;
 
 
 			setTimeout(()=>{
+				this.gameDoubleState.cellNumber = sercretCellNumber;
+				this.gameDoubleState.cellDecimal = sercretCellDecimal;
+			},updateResultAt);
+
+			setTimeout(()=>{
 				this.gameDoubleState.status = STATUS.FINISH;
-				this.gameDoubleState.cellNumber = Math.floor(Math.random() * 14);
-				this.gameDoubleState.cellDecimal = Number(Math.random().toFixed(2));
+				this.gameDoubleState.isAnimating = false;
 
 				const int = this.gameDoubleState.cellNumber;
 
@@ -193,7 +129,8 @@ module.exports.GameDoubleService = class GameDoubleService {
 				function updateUser (user) {
 					const {win,k} = isWinnerFn(user);
 					if (win) {
-						user.balance = user.balance + user.currentBet * k;
+						user.currentBet = user.currentBet * k;
+						user.balance = user.balance + user.currentBet;
 					} else {
 						user.balance = user.balance - user.currentBet ;
 					}
@@ -203,21 +140,25 @@ module.exports.GameDoubleService = class GameDoubleService {
 					.filter(betWasMade)
 					.forEach(updateUser);
 
-				emit(this.io,WS_EVENTS.GAME_DOUBLE_USERS_CHANGED,this.gameDoubleState.toJSON())
+
+				this.gameDoubleState.status = STATUS.STOPPED;
+				// emit(this.io,WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,this.gameDoubleState.toJSON());
 
 
 				setTimeout(()=>{
 					this.gameDoubleState.reset();
 					setTimeout(()=>{this.startGame()})
 
-				},2000) // 3 showing results
+				},showResultsFor) // 3 showing results
 
-			},9000) // 2 animation in progress
+			},animateFor) // 2 animation in progress
 
-		},10000) // 1 waiting for bets
+		},startGameThrougn) // 1 waiting for bets
 	}
 
 };
+
+
 
 
 
@@ -236,7 +177,6 @@ function socketsToJson (sockets={}) {
 			return result;
 		},{});
 }
-
 
 function userDefaults () {
 	return {
@@ -262,7 +202,6 @@ function socketToJson(socket={}) {
 function getUsers (webSocketServer) {
 	return socketsToJson(webSocketServer.clients().connected);
 }
-
 
 function getConnectionState (io) {
 	return {

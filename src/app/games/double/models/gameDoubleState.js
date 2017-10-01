@@ -22,6 +22,7 @@ const PUT_ON = {
 		cellNumber: 0, // от 0 до 14
 		cellDecimal: 0,// 0.01 до 0.99
 		displayBalance: 10,
+		isAnimating: false,
 		'user.balance': 0,
 		'user.nickname': '',
 		'user.currentBet': '',
