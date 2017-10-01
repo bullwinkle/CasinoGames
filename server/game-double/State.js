@@ -3,11 +3,6 @@ const STATUS = require("./constants").STATUS;
 const WS_EVENTS = require("../../CONFIG").WS_EVENTS;
 const Users = require("./Users").Users;
 
-
-function emit (io,event,...args) {
-	return io.sockets.emit(event,...args);
-};
-
 class GameDoubleState {
 	constructor ({io}) {
 		this.io = io;
@@ -16,7 +11,10 @@ class GameDoubleState {
 			emit(this.io, WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,this.toJSON())
 		,20);
 
-		this._users = new Users({io,state:this,onChanges:this.emitChanges});
+		this._users = new Users({io: this.io,state:this,onChanges:this.emitChanges});
+
+
+		setTimeout(()=>{console.log(new Array())},1000)
 	}
 	get isAnimating () { return this._isAnimating }
 	set isAnimating (val) {
@@ -75,5 +73,8 @@ Object.assign(GameDoubleState.prototype,{
 	_status: STATUS.STOPPED,
 	_users: [],
 });
-
 exports.GameDoubleState = GameDoubleState;
+
+function emit (io,event,...args) {
+	return io.sockets.emit(event,...args);
+}

@@ -31,6 +31,7 @@ app.get('*', function (request, response) {
 
 
 /* WebSocket API */
+const gameDouble = new GameDoubleService({io});
 
 io.on('connection', (socket) => {
 	console.log('\nSOCKET CONNECTION');
@@ -58,14 +59,14 @@ io.on('connection', (socket) => {
 
 	socket.send('hello, client');
 
-	const game = new GameDoubleService({socket,io});
+	gameDouble.initializeSocket(socket);
+
 });
 
 
 httpServer.listen(PORT_HTTP, (...args) => {
 	console.log(`Server is listening on port = ${PORT_HTTP}`)
 });
-
 
 
 

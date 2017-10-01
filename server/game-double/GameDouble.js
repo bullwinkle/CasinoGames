@@ -8,12 +8,11 @@ const {usersMock} = require("../../src/app/games/double/users/usersMock");
 const {WS_EVENTS} = require('../../CONFIG');
 
 class GameDoubleService {
-	constructor({socket,io}){
+	constructor({io}){
+
+		console.log('new GameDoubleService')
 
 		if (GameDoubleService.instance) {
-			socket.emit(
-				WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,GameDoubleService.instance.gameDoubleState.toJSON()
-			);
 			return GameDoubleService.instance
 		}
 		GameDoubleService.instance = this;
@@ -22,17 +21,37 @@ class GameDoubleService {
 		this.gameDoubleState = new GameDoubleState({io});
 
 		this.startGame();
-		this.startFakeUsersStream();
+		// this.startFakeUsersStream();
 
-		setInterval(() => {
-			emit(io,"CONNECTIONS",getUsers(io));
-		},2000)
+		// setInterval(() => {
+		// 	emit(io,"CONNECTIONS",this.gameDoubleState.users);
+		// },2000)
+	}
+
+	initializeSocket (socket) {
+		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user)=>{
+			// console.warn(WS_EVENTS.ACTION_UPDATE_USER,user)
+			const userToUpdate = getUserByIp(socket,this.gameDoubleState.users);
+			console.log(userToUpdate,user)
+			console.log(user);
+			Object.assign(userToUpdate,user);
+			this.gameDoubleState.emitChanges();
+		});
+
+		socket.emit(
+			WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
+			GameDoubleService.instance.gameDoubleState.toJSON()
+		);
+
+		socket.emit(
+			WS_EVENTS.USER_UPDATED,
+			getUserByIp(socket,this.gameDoubleState.users)
+		);
 	}
 
 	startFakeUsersStream () {
 		let tmpArr = usersMock.map(el=>({...el}));
-		let tmpArr1 = usersMock.map(el=>({...el}));
-		let tmpArr2 = usersMock.map(el=>({...el}));
+
 		GameDoubleService.fakeUsersStreamStarted = setInterval(()=>{
 
 			if (this.gameDoubleState.status !== STATUS.WAITING_FOR_BETS) {
@@ -40,13 +59,15 @@ class GameDoubleService {
 			}
 
 			if (!tmpArr.length) {
-				const clone = usersMock.map(el=>({...el}));
-				tmpArr.push( ...clone  );
+				tmpArr.push(
+					...usersMock.map( el =>({...el}) )
+				);
 			}
 			const randomIndex = Math.floor(Math.random()*tmpArr.length);
 			const randomUserFromList = tmpArr.splice(randomIndex,1)[0];
 			if (randomUserFromList)
 				this.gameDoubleState.users.push(randomUserFromList);
+
 		},9500/tmpArr.length);
 
 		return GameDoubleService.fakeUsersStreamStarted;
@@ -60,9 +81,11 @@ class GameDoubleService {
 
 
 	gameLoop ({ sercretCellNumber, sercretCellDecimal }) {
-		console.log('[GAME LOOP STARTED]')
+		console.log('[GAME LOOP STARTED]');
 		return new Promise((rs,rj)=>{
-			if (this.gameDoubleState.status !== STATUS.STOPPED) return rj('previous loop is not finished');
+			if (this.gameDoubleState.status !== STATUS.STOPPED)
+				return rj('previous loop is not finished');
+
 			this.gameDoubleState.status = STATUS.WAITING_FOR_BETS;
 			rs('ok');
 		})
@@ -86,8 +109,6 @@ class GameDoubleService {
 				.forEach( user =>
 					updateUser(user,this.gameDoubleState.cellNumber)
 				);
-
-			this.gameDoubleState.status = STATUS.STOPPED;
 		})
 		.then(delay(5000))
 		.then(()=>{
@@ -115,23 +136,6 @@ function emit (io,event,...args) {
 
 function wasBetPlaced(user={}) {
 	return !!user.betOn;
-}
-
-function transformSocketsToUsers(sockets={}) {
-	const groupBy = 'referrer';
-	return Object.keys(sockets)
-		.map( key => socketToJson(sockets[key]) )
-		.reduce((result,socketJson)=>{
-			result[socketJson[groupBy]] || (result[socketJson[groupBy]] = userDefaults());
-			const user = result[socketJson[groupBy]];
-			if (!user.id) user.id = socketJson[groupBy];
-			const prefix = `[${user.id}]`;
-			if (!user.nickname.startsWith(prefix))
-				user.nickname = `${prefix} ${user.nickname}`;
-			user.connections || (user.connections = []);
-			user.connections.push(socketJson);
-			return result;
-		},{});
 }
 
 function isUserWinner(user, int ) {
@@ -165,45 +169,27 @@ function updateUser (user={},winningInt=0) {
 	}
 }
 
-function getUsers (webSocketServer) {
-	return transformSocketsToUsers(webSocketServer.clients().connected);
-}
-
-function userDefaults () {
-	return {
-		nickname: 'nickname',
-		balance: 10000,
-		$fullName: 'firstName lastName',
-		firstName: 'firstName',
-		lastName: 'lastName',
-		betAmount: 0,
-		betOn: '',
-		connections: []
-	}
-}
-
-function socketToJson(socket={}) {
-	return {
-		id: socket.id,
-		referrer: socket.request.connection.remoteAddress,
-		type: 'socket'
-	}
-}
-
-function getUsers (webSocketServer) {
-	return transformSocketsToUsers(webSocketServer.clients().connected);
-}
-
-function getConnectionState (io) {
-	return {
-		total: Object.keys(io.clients().connected).length
-	}
-}
-
 function delay (time) {
 	return (...args)=> {
 		return new Promise((rs)=>{
 			setTimeout(()=>rs(...args),time)
 		})
 	}
+}
+
+function getConnectionIp (socket) {
+	try {
+		return socket.request.connection.remoteAddress;
+	} catch (e) {
+		console.warn('can`t define socket ip',e);
+		return "";
+	}
+}
+
+function getUserByIp (socket,users) {
+	const userId = getConnectionIp(socket);
+	if (!userId) return null;
+
+	const result = users.toJSON().find(user => user.id === userId)
+	return result;
 }

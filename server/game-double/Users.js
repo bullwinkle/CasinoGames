@@ -1,29 +1,42 @@
-exports.Users = class Users extends Array {
+exports.Users = class Users {
 	constructor ({io,state,onChanges},...arrayArgs) {
-		super(...arrayArgs);
-		this.io = io;
-		this.state = state;
-		this.onChanges = typeof onChanges === 'function' ? onChanges : ()=>{};
-	}
-	push (...args) {
-		const result = super.push(...args);
-		this.onChanges(this.toJSON());
-		return result;
-	}
+		if (io) this.io = io;
+		if (state) this.state = state;
+		if (onChanges) this.onChanges = typeof onChanges === 'function' ? onChanges : ()=>{};
 
-	splice (...args) {
-		const result = super.splice(...args);
-		this.onChanges(this.toJSON());
-		return result;
+		const usersArray = this._array = new Array(...arrayArgs);
+
+		const mutationMethods = ['push','pop','shift','unshift','splice'];
+		const immutableMethods = ['find','filter','concat'];
+		const arrayMethods = mutationMethods.concat(immutableMethods);
+
+		arrayMethods.forEach((arrayMethod)=>{
+			this[arrayMethod] = (...args)=>{
+				const result = usersArray[arrayMethod](...args);
+				if (mutationMethods.includes(arrayMethod)) {
+					this.onChanges(this.toJSON());
+				}
+				return result;
+			}
+		});
+
+		function updateUsers () {
+			usersArray.splice(0,usersArray.length);
+			usersArray.push(...getUsers(io));
+		}
+
+		io.on('connection', (socket) => {
+			updateUsers();
+
+			socket.on('disconnect', (reason) => {
+				updateUsers();
+			});
+		});
+
 	}
 
 	toJSON() {
-		const users = getUsers(this.io);
-		const usersCopy = Object.keys(users)
-			.map(key=>users[key])
-		;
-		const restult = this.concat(usersCopy);
-		return restult;
+		return this._array;
 	}
 };
 
@@ -38,7 +51,7 @@ function userDefaults () {
 		lastName: 'lastName',
 		betAmount: 0,
 		icon:'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
-		betOn: 'green',
+		betOn: '',
 		connections: []
 	}
 }
@@ -48,6 +61,13 @@ function transformSocketsToUsers(sockets={}) {
 	return Object.keys(sockets)
 		.map( key => socketToJson(sockets[key]) )
 		.reduce((result,socketJson)=>{
+			/*
+			* map to object,grouped by {groupBy}
+			* example: {
+			* 		"1": { id: 1,foo:'123' },
+			* 		"2": { id: 2,foo:'456' }
+			* 	}
+			* */
 			result[socketJson[groupBy]] || (result[socketJson[groupBy]] = userDefaults());
 			const user = result[socketJson[groupBy]];
 			if (!user.id) user.id = socketJson[groupBy];
@@ -57,11 +77,16 @@ function transformSocketsToUsers(sockets={}) {
 			user.connections || (user.connections = []);
 			user.connections.push(socketJson);
 			return result;
-		},{});
+		},{})
+	;
 }
 
 function getUsers (webSocketServer) {
-	return transformSocketsToUsers(webSocketServer.clients().connected);
+	return Object.values(
+		transformSocketsToUsers(
+			webSocketServer.clients().connected
+		)
+	);
 }
 
 function socketToJson(socket={}) {

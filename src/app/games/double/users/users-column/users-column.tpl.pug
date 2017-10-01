@@ -6,10 +6,11 @@ input(
 	name="betOn"
 	value=locals.betOn
 	id=inputId
-	property-binding-state="betOn"
+	property-binding-user="betOn"
 )
 label.s-btn.m-expand.l-nowrap.f-c-white.put-on-button(
 	class='s-bg-' + locals.color
+	bet-button=locals.betOn
 	for=inputId
 )= button
 	| #[b #{locals.from}]

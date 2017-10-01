@@ -7,16 +7,16 @@ import {GameDoubleState} from "./models/gameDoubleState";
 import {GameDoubleUsersView} from "./users/UsersView";
 import {store} from "./store";
 import {usersMock} from "./users/usersMock";
+import {STATUS} from "../../../../server/game-double/constants";
 
 const ANIMATION_CLASS_NAME = 'spin';
 
 const FAKE_USER = {
-	id: 1,
+	id: -1,
 	nickname: 'FakeNickname',
 	balance: 10000,
 	betAmount: 10
 };
-
 
 @props({
 	template: require('./game-duble.tpl.pug'),
@@ -29,17 +29,20 @@ const FAKE_USER = {
 		animatable: '[animatable]',
 		spinnerCellsContainer: '.spinner-cells',
 		betAction: '[bet-action]',
-		balanceValue: '[balance]'
+		balanceValue: '[balance]',
+		betButton: '[bet-button]'
 	},
 	events: {
 		'animationend @ui.animatable': 'onAnimationEnd',
 		'animationstart @ui.animatable': 'onAnimationStart',
-		'click @ui.betAction': 'onBetActionClick'
+		'click @ui.betAction': 'onBetActionClick',
+		'click @ui.betButton': 'onBetButtonClick'
 	},
 	modelEvents: {
 		'change:cellNumber': 'updateSpinnerValue',
 		'change:cellDecimal': 'updateSpinnerValue',
-		'change:status': 'onStatusChange'
+		'change:status': 'onStatusChange',
+		'change:isAnimating': 'onIsAnimatingChange',
 	}
 })
 export class GameDouble extends Marionette.View {
@@ -64,22 +67,11 @@ export class GameDouble extends Marionette.View {
 			collection: this.usersCollection
 		});
 
-		this.listenTo(this.model,{
-			'change:status':(m,status)=> {
-				switch (status) {
-					case GameDoubleState.STATUS.STOPPED:
-						this.currentUser.set({
-							betOn: ''
-						});
-						this.usersCollection.reset();
-						break;
-				}
-			},
-			'change:isAnimating': (m,isAnimating) => {
-				if (isAnimating) this.startAnimation();
-				else this.stopAnimation();
-			}
-		});
+		// this.listenTo(this.currentUser,{
+		// 	'change:betOn': (m,betOn) => {
+		// 		app.wsApi.emit(WS_EVENTS.ACTION_UPDATE_USER,this.currentUser.toJSON())
+		// 	}
+		// })
 	}
 
 	onRender() {
@@ -95,10 +87,24 @@ export class GameDouble extends Marionette.View {
 
 	initWebSocket () {
 		app.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,(state)=>{
-			console.warn('WS_EVENTS.GAME_DOUBLE_STATE_CHANGED',state)
+			console.warn('WS_EVENTS.GAME_DOUBLE_STATE_CHANGED',state);
 			const {users,...other} = state;
+			const currentUser = users.find(user => user.id === this.currentUser.id);
+
 			this.model.set(other);
-			this.usersCollection.set(users,{merge:true})
+			this.usersCollection.set(users,{merge:true});
+
+			//regular updating current user
+			if (currentUser && (this.currentUser.get('id') === -1 || state.status === STATUS.FINISH)) {
+				this.currentUser.set(currentUser);
+			}
+		});
+
+
+		// users to just first updating current user to know it`s user.id
+		app.wsApi.on(WS_EVENTS.USER_UPDATED,(user)=>{
+			console.warn('WS_EVENTS.USER_UPDATED',user);
+			this.currentUser.set(user);
 		});
 		// App.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,(payload)=>{
 		// 	console.warn('WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED',payload)
@@ -114,18 +120,34 @@ export class GameDouble extends Marionette.View {
 	onStatusChange (m,status) {
 		const selector = 'input[name="betOn"], .bet-input, [bet-action]';
 		switch (status) {
+
 			case GameDoubleState.STATUS.STOPPED:
+				this.$el.find(selector).prop('disabled',false);
+				this.currentUser.set({
+					betOn: ''
+				});
+				this.usersCollection.reset();
+				break;
+
 			case GameDoubleState.STATUS.WAITING_FOR_BETS:
 				this.$el.find(selector).prop('disabled',false);
 				break;
+
 			default:
 				this.$el.find(selector).prop('disabled',true);
 				break;
 		}
 	}
 
+	onIsAnimatingChange (m,isAnimating) {
+		if (isAnimating) this.startAnimation();
+		else this.stopAnimation();
+	}
+
 	onBetActionClick(e) {
-		const actionName = $(e.currentTarget).attr('bet-action')
+		const actionName = $(e.currentTarget).attr('bet-action');
+		const currentAmount = this.currentUser.get('betAmount');
+
 		switch (actionName) {
 			case "clean":
 				this.currentUser.set('betAmount', 0);
@@ -134,27 +156,31 @@ export class GameDouble extends Marionette.View {
 				this.currentUser.set('betAmount', this.model.get('betAmount_previous') || 0);
 				break;
 			case "+10":
-				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 10);
+				this.currentUser.set('betAmount', currentAmount + 10);
 				break;
 			case "+100":
-				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 100);
+				this.currentUser.set('betAmount', currentAmount + 100);
 				break;
 			case "+500":
-				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 500);
+				this.currentUser.set('betAmount', currentAmount + 500);
 				break;
 			case "+1000":
-				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 1000);
+				this.currentUser.set('betAmount', currentAmount + 1000);
 				break;
 			case "1/2":
-				this.currentUser.set('betAmount', this.currentUser.get('betAmount') / 2);
+				this.currentUser.set('betAmount', currentAmount / 2);
 				break;
 			case "x2":
-				this.currentUser.set('betAmount', this.currentUser.get('betAmount') * 2);
+				this.currentUser.set('betAmount', currentAmount * 2);
 				break;
 			case "max":
 				this.currentUser.set('betAmount', this.currentUser.get('balance'));
 				break;
 		}
+	}
+
+	onBetButtonClick (e) {
+		setTimeout(()=>{ this.submitBet(); },20)
 	}
 
 	onAnimationStart(e) {
@@ -164,6 +190,19 @@ export class GameDouble extends Marionette.View {
 	onAnimationEnd(e) {
 		// console.warn('onAnimationEnd', e);
 		// this.ui.animatable.removeClass(ANIMATION_CLASS_NAME);
+	}
+
+	stopAnimation() {
+		const isAnimationPlaying = this.ui.animatable.hasClass(ANIMATION_CLASS_NAME);
+
+		if (isAnimationPlaying) this.ui.animatable.trigger('animationend');
+		this.ui.animatable.removeClass(ANIMATION_CLASS_NAME);
+	}
+
+	startAnimation() {
+		setTimeout(() => {
+			this.ui.animatable.addClass(ANIMATION_CLASS_NAME);
+		})
 	}
 
 	updateSpinnerValue() {
@@ -185,101 +224,10 @@ export class GameDouble extends Marionette.View {
 		this.ui.animatable.css('left', `calc(-100% + ${translateTo}px)`);
 	}
 
-	stopAnimation() {
-		const isAnimationPlaying = this.ui.animatable.hasClass(ANIMATION_CLASS_NAME);
-
-		if (isAnimationPlaying) this.ui.animatable.trigger('animationend');
-		this.ui.animatable.removeClass(ANIMATION_CLASS_NAME);
-	}
-
-	startAnimation() {
-		setTimeout(() => {
-			this.ui.animatable.addClass(ANIMATION_CLASS_NAME);
-		})
-	}
-
-	startGame () {
-		if (this.model.get('status') !== GameDoubleState.STATUS.STOPPED) return false;
-
-		this.model.set('status',GameDoubleState.STATUS.WAITING_FOR_BETS);
-
-		const usersMockClone = [...usersMock];
-		const pushUserInterval = setInterval(()=>{
-			this.usersCollection.push(usersMockClone.splice(Math.floor(Math.random()*usersMockClone.length),1))
-		},9500/usersMockClone.length);
-
-		setTimeout(()=>{
-			this.startAnimation();
-		},9000);
-
-		setTimeout(()=>{
-			this.model.set('status', GameDoubleState.STATUS.IS_PLAYING_OUT);
-
-			setTimeout(()=>{
-				this.model.set({
-					cellNumber: Math.floor(Math.random() * 14),
-					cellDecimal: Number(Math.random().toFixed(2))
-				});
-			});
-
-			if (this.currentUser.get('betAmount') && this.currentUser.get('betOn')) {
-				this.model.set({
-					betAmount_previous: this.currentUser.get('betAmount')
-				});
-			}
-
-			setTimeout(()=>{
-				this.model.set('status',GameDoubleState.STATUS.FINISH);
-				const int = this.model.get('cellNumber');
-
-				const betWasMade = !!this.currentUser.get('betOn');
-				function isWinnerFn(userModel) {
-					switch (userModel.get('betOn')) {
-						case GameDoubleState.PUT_ON.RED: return {
-							win: (int >=1 && int < 8),
-							k: 2
-						};
-						case GameDoubleState.PUT_ON.GREEN: return {
-							win: int === 0,
-							k: 14
-						};
-						case GameDoubleState.PUT_ON.BLACK: return {
-							win: int >= 8 && int < 15,
-							k: 2
-						};
-						default: return {
-							win: false,
-							k:1
-						}
-					}
-				}
-
-				/* Update current user state */
-				if (betWasMade) {
-					const {win,k} = isWinnerFn(this.currentUser);
-					if (win) {
-						this.currentUser.set('balance',this.currentUser.get('balance') + this.currentUser.get('betAmount') * k );
-					} else {
-						this.currentUser.set('balance',this.currentUser.get('balance') - this.currentUser.get('betAmount') )
-					}
-				}
-
-				/* Update other users states*/
-				this.usersCollection.forEach(user=>{
-					const {win,k} = isWinnerFn(user);
-					const usersCurrentBet = user.get('betAmount');
-					if (win) user.set('betAmount',usersCurrentBet * k)
-				});
-
-
-				setTimeout(()=>{
-					this.reset();
-					setTimeout(()=>{this.startGame()})
-
-				},2000) // 3 showing results
-
-			},9000) // 2 animation in progress
-
-		},10000) // 1 waiting for bets
+	submitBet () {
+		app.wsApi.emit(
+			WS_EVENTS.ACTION_UPDATE_USER,
+			this.currentUser.toJSON()
+		)
 	}
 }
