@@ -16,7 +16,7 @@ const defaultOptions = {
 	playersTotal:10000,
 	greatestUserName: '',
 	greatestUserBet: 0,
-	putOn:''
+	betOn:''
 };
 
 
@@ -63,8 +63,8 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 		this.listenTo(this.collection,'add remove reset change',()=>{
 
 			const {playersTotal,greatestUser} = this.collection.reduce((result,user,i)=>{
-				result.playersTotal+=user.get('currentBet')
-				if (!result.greatestUser || result.greatestUser.get('currentBet') < user.get('currentBet')) {
+				result.playersTotal+=user.get('betAmount')
+				if (!result.greatestUser || result.greatestUser.get('betAmount') < user.get('betAmount')) {
 					result.greatestUser = user;
 				}
 				return result;
@@ -75,7 +75,7 @@ export class GameDoubleUsersColumnView extends Marionette.View {
 				playersTotal: playersTotal,
 				greatestUserIcon: greatestUser && greatestUser.get('icon'),
 				greatestUserName: greatestUser && greatestUser.get('name'),
-				greatestUserBet: greatestUser && greatestUser.get('currentBet')
+				greatestUserBet: greatestUser && greatestUser.get('betAmount')
 			})
 		});
 	}

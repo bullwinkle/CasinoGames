@@ -23,7 +23,6 @@ exports.Users = class Users extends Array {
 			.map(key=>users[key])
 		;
 		const restult = this.concat(usersCopy);
-		console.log(restult);
 		return restult;
 	}
 };
@@ -37,9 +36,9 @@ function userDefaults () {
 		name: 'firstName lastName',
 		firstName: 'firstName',
 		lastName: 'lastName',
-		currentBet: 0,
+		betAmount: 0,
 		icon:'http://l-f-k.ru/wp-content/uploads/2016/10/user.png',
-		putOn: 'green',
+		betOn: 'green',
 		connections: []
 	}
 }

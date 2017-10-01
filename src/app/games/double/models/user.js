@@ -9,8 +9,8 @@ import {props} from "app/decorators";
 		$fullName: '',
 		firstName: '',
 		lastName: '',
-		currentBet: 0,
-		putOn: ''
+		betAmount: 0,
+		betOn: ''
 	},
 	computed: {
 		$fullName: {

@@ -45,7 +45,7 @@ export class GameDoubleUsersView extends Marionette.View {
 
 	syncCollections () {
 		const collections = this.usersCollection.reduce((result, user, i, arr) => {
-			switch (user.get('putOn')) {
+			switch (user.get('betOn')) {
 				case GameDoubleState.PUT_ON.RED:
 					result.red.push(user);
 					break;
@@ -75,7 +75,7 @@ export class GameDoubleUsersView extends Marionette.View {
 			upTo:2,
 			color:'red',
 			colorWord:'красное',
-			putOn: GameDoubleState.PUT_ON.RED,
+			betOn: GameDoubleState.PUT_ON.RED,
 			collection: this.collections.red
 		});
 
@@ -85,7 +85,7 @@ export class GameDoubleUsersView extends Marionette.View {
 			upTo:14,
 			color:'green',
 			colorWord:'зелёное',
-			putOn:GameDoubleState.PUT_ON.GREEN,
+			betOn:GameDoubleState.PUT_ON.GREEN,
 			collection: this.collections.green
 		});
 
@@ -95,7 +95,7 @@ export class GameDoubleUsersView extends Marionette.View {
 			upTo:2,
 			color:'black',
 			colorWord:'чёрное',
-			putOn:GameDoubleState.PUT_ON.BLACK,
+			betOn:GameDoubleState.PUT_ON.BLACK,
 			collection: this.collections.black
 		});
 

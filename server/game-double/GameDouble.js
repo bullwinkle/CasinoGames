@@ -7,12 +7,7 @@ const {
 const {usersMock} = require("../../src/app/games/double/users/usersMock");
 const {WS_EVENTS} = require('../../CONFIG');
 
-
-function emit (io,event,...args) {
-	return io.sockets.emit(event,...args);
-}
-
-module.exports.GameDoubleService = class GameDoubleService {
+class GameDoubleService {
 	constructor({socket,io}){
 
 		if (GameDoubleService.instance) {
@@ -60,94 +55,67 @@ module.exports.GameDoubleService = class GameDoubleService {
 	startGame () {
 		console.log('[START GAME]');
 
-		if (this.gameDoubleState.status !== STATUS.STOPPED) return false;
-		this.gameDoubleState.status = STATUS.WAITING_FOR_BETS;
-
-		const sercretCellNumber = Math.floor(Math.random() * 14);
-		const sercretCellDecimal = Number(Math.random().toFixed(2));
-
-		const startGameThrougn = 10000;
-		const animateFor = 9000;
-		const updateResultAt = 3000;
-		const showResultsFor = 5000;
-
-
-		setTimeout(()=>{
-			this.gameDoubleState.status = STATUS.IS_PLAYING_OUT;
-			this.gameDoubleState.isAnimating = true;
-
-
-			setTimeout(()=>{
-				this.gameDoubleState.cellNumber = sercretCellNumber;
-				this.gameDoubleState.cellDecimal = sercretCellDecimal;
-			},updateResultAt);
-
-			setTimeout(()=>{
-				this.gameDoubleState.status = STATUS.FINISH;
-				this.gameDoubleState.isAnimating = false;
-
-				const int = this.gameDoubleState.cellNumber;
-
-				function isWinnerFn(user) {
-					switch (user.putOn) {
-						case PUT_ON.RED: return {
-							win: (int >=1 && int < 8),
-							k: 2
-						};
-						case PUT_ON.GREEN: return {
-							win: int === 0,
-							k: 14
-						};
-						case PUT_ON.BLACK: return {
-							win: int >= 8 && int < 15,
-							k: 2
-						};
-						default: return {
-							win: false,
-							k:1
-						}
-					}
-				}
-
-				function betWasMade(user={}) {
-					return !!user.putOn;
-				}
-
-				function updateUser (user) {
-					const {win,k} = isWinnerFn(user);
-					if (win) {
-						user.currentBet = user.currentBet * k;
-						user.balance = user.balance + user.currentBet;
-					} else {
-						user.balance = user.balance - user.currentBet ;
-					}
-				}
-
-				this.gameDoubleState.users
-					.filter(betWasMade)
-					.forEach(updateUser);
-
-
-				this.gameDoubleState.status = STATUS.STOPPED;
-				// emit(this.io,WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,this.gameDoubleState.toJSON());
-
-
-				setTimeout(()=>{
-					this.gameDoubleState.reset();
-					setTimeout(()=>{this.startGame()})
-
-				},showResultsFor) // 3 showing results
-
-			},animateFor) // 2 animation in progress
-
-		},startGameThrougn) // 1 waiting for bets
+		this.gameLoop(getSecretValues());
 	}
 
-};
 
+	gameLoop ({ sercretCellNumber, sercretCellDecimal }) {
+		console.log('[GAME LOOP STARTED]')
+		return new Promise((rs,rj)=>{
+			if (this.gameDoubleState.status !== STATUS.STOPPED) return rj('previous loop is not finished');
+			this.gameDoubleState.status = STATUS.WAITING_FOR_BETS;
+			rs('ok');
+		})
+		.then(delay(10000))
+		.then(()=>{
+			this.gameDoubleState.status = STATUS.IS_PLAYING_OUT;
+			this.gameDoubleState.isAnimating = true;
+		})
+		.then(delay(3000))
+		.then(()=>{
+			this.gameDoubleState.cellNumber = sercretCellNumber;
+			this.gameDoubleState.cellDecimal = sercretCellDecimal;
+		})
+		.then(delay(6000))
+		.then(()=>{
+			this.gameDoubleState.status = STATUS.FINISH;
+			this.gameDoubleState.isAnimating = false;
 
+			this.gameDoubleState.users
+				.filter(wasBetPlaced)
+				.forEach( user =>
+					updateUser(user,this.gameDoubleState.cellNumber)
+				);
 
+			this.gameDoubleState.status = STATUS.STOPPED;
+		})
+		.then(delay(5000))
+		.then(()=>{
+			return this.gameDoubleState.reset();
+		})
+		.then(()=>{
+			console.log('[GAME LOOP FINISHED]');
+			this.gameLoop(getSecretValues());
+		});
+	}
 
+}
+
+module.exports.GameDoubleService = GameDoubleService
+
+function getSecretValues () {
+	const sercretCellNumber = Math.floor(Math.random() * 14);
+	const sercretCellDecimal = Number(Math.random().toFixed(2));
+	return { sercretCellNumber, sercretCellDecimal };
+}
+
+function emit (io,event,...args) {
+	return io.sockets.emit(event,...args);
+}
+
+function wasBetPlaced(user={}) {
+	return !!user.betOn;
+}
 
 function transformSocketsToUsers(sockets={}) {
 	const groupBy = 'referrer';
@@ -165,6 +133,38 @@ function transformSocketsToUsers(sockets={}) {
 			return result;
 		},{});
 }
+
+function isUserWinner(user, int ) {
+	switch (user.betOn) {
+		case PUT_ON.RED: return {
+			win: (int >=1 && int < 8),
+			k: 2
+		};
+		case PUT_ON.GREEN: return {
+			win: int === 0,
+			k: 14
+		};
+		case PUT_ON.BLACK: return {
+			win: int >= 8 && int < 15,
+			k: 2
+		};
+		default: return {
+			win: false,
+			k:1
+		}
+	}
+}
+
+function updateUser (user={},winningInt=0) {
+	const {win,k} = isUserWinner(user,winningInt);
+	if (win) {
+		user.betAmount = user.betAmount * k;
+		user.balance = user.balance + user.betAmount;
+	} else {
+		user.balance = user.balance - user.betAmount ;
+	}
+}
+
 function getUsers (webSocketServer) {
 	return transformSocketsToUsers(webSocketServer.clients().connected);
 }
@@ -176,8 +176,8 @@ function userDefaults () {
 		$fullName: 'firstName lastName',
 		firstName: 'firstName',
 		lastName: 'lastName',
-		currentBet: 0,
-		putOn: '',
+		betAmount: 0,
+		betOn: '',
 		connections: []
 	}
 }
@@ -197,5 +197,13 @@ function getUsers (webSocketServer) {
 function getConnectionState (io) {
 	return {
 		total: Object.keys(io.clients().connected).length
+	}
+}
+
+function delay (time) {
+	return (...args)=> {
+		return new Promise((rs)=>{
+			setTimeout(()=>rs(...args),time)
+		})
 	}
 }

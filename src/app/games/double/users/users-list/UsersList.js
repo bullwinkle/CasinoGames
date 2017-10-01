@@ -10,7 +10,7 @@ import {UserItem} from "../users-item/UserItem";
 export class UsersList extends Marionette.CollectionView {
 	initialize () {
 		this.model = new Backbone.Model({
-			sortBy: 'currentBet', // | property name
+			sortBy: 'betAmount', // | property name
 			order: 'desc' // asc | desc
 		});
 	}

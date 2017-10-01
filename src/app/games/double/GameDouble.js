@@ -14,7 +14,7 @@ const FAKE_USER = {
 	id: 1,
 	nickname: 'FakeNickname',
 	balance: 10000,
-	currentBet: 10
+	betAmount: 10
 };
 
 
@@ -64,17 +64,13 @@ export class GameDouble extends Marionette.View {
 			collection: this.usersCollection
 		});
 
-
-		// this.listenTo(this.usersCollection,'add remove reset change',);
-
 		this.listenTo(this.model,{
 			'change:status':(m,status)=> {
 				switch (status) {
 					case GameDoubleState.STATUS.STOPPED:
 						this.currentUser.set({
-							putOn: ''
+							betOn: ''
 						});
-
 						this.usersCollection.reset();
 						break;
 				}
@@ -116,7 +112,7 @@ export class GameDouble extends Marionette.View {
 	}
 
 	onStatusChange (m,status) {
-		const selector = 'input[name="putOn"], .bet-input, [bet-action]';
+		const selector = 'input[name="betOn"], .bet-input, [bet-action]';
 		switch (status) {
 			case GameDoubleState.STATUS.STOPPED:
 			case GameDoubleState.STATUS.WAITING_FOR_BETS:
@@ -132,31 +128,31 @@ export class GameDouble extends Marionette.View {
 		const actionName = $(e.currentTarget).attr('bet-action')
 		switch (actionName) {
 			case "clean":
-				this.currentUser.set('currentBet', 0);
+				this.currentUser.set('betAmount', 0);
 				break;
 			case "last":
-				this.currentUser.set('currentBet', this.model.get('currentBet_previous') || 0);
+				this.currentUser.set('betAmount', this.model.get('betAmount_previous') || 0);
 				break;
 			case "+10":
-				this.currentUser.set('currentBet', this.currentUser.get('currentBet') + 10);
+				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 10);
 				break;
 			case "+100":
-				this.currentUser.set('currentBet', this.currentUser.get('currentBet') + 100);
+				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 100);
 				break;
 			case "+500":
-				this.currentUser.set('currentBet', this.currentUser.get('currentBet') + 500);
+				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 500);
 				break;
 			case "+1000":
-				this.currentUser.set('currentBet', this.currentUser.get('currentBet') + 1000);
+				this.currentUser.set('betAmount', this.currentUser.get('betAmount') + 1000);
 				break;
 			case "1/2":
-				this.currentUser.set('currentBet', this.currentUser.get('currentBet') / 2);
+				this.currentUser.set('betAmount', this.currentUser.get('betAmount') / 2);
 				break;
 			case "x2":
-				this.currentUser.set('currentBet', this.currentUser.get('currentBet') * 2);
+				this.currentUser.set('betAmount', this.currentUser.get('betAmount') * 2);
 				break;
 			case "max":
-				this.currentUser.set('currentBet', this.currentUser.get('balance'));
+				this.currentUser.set('betAmount', this.currentUser.get('balance'));
 				break;
 		}
 	}
@@ -226,9 +222,9 @@ export class GameDouble extends Marionette.View {
 				});
 			});
 
-			if (this.currentUser.get('currentBet') && this.currentUser.get('putOn')) {
+			if (this.currentUser.get('betAmount') && this.currentUser.get('betOn')) {
 				this.model.set({
-					currentBet_previous: this.currentUser.get('currentBet')
+					betAmount_previous: this.currentUser.get('betAmount')
 				});
 			}
 
@@ -236,9 +232,9 @@ export class GameDouble extends Marionette.View {
 				this.model.set('status',GameDoubleState.STATUS.FINISH);
 				const int = this.model.get('cellNumber');
 
-				const betWasMade = !!this.currentUser.get('putOn');
+				const betWasMade = !!this.currentUser.get('betOn');
 				function isWinnerFn(userModel) {
-					switch (userModel.get('putOn')) {
+					switch (userModel.get('betOn')) {
 						case GameDoubleState.PUT_ON.RED: return {
 							win: (int >=1 && int < 8),
 							k: 2
@@ -262,17 +258,17 @@ export class GameDouble extends Marionette.View {
 				if (betWasMade) {
 					const {win,k} = isWinnerFn(this.currentUser);
 					if (win) {
-						this.currentUser.set('balance',this.currentUser.get('balance') + this.currentUser.get('currentBet') * k );
+						this.currentUser.set('balance',this.currentUser.get('balance') + this.currentUser.get('betAmount') * k );
 					} else {
-						this.currentUser.set('balance',this.currentUser.get('balance') - this.currentUser.get('currentBet') )
+						this.currentUser.set('balance',this.currentUser.get('balance') - this.currentUser.get('betAmount') )
 					}
 				}
 
 				/* Update other users states*/
 				this.usersCollection.forEach(user=>{
 					const {win,k} = isWinnerFn(user);
-					const usersCurrentBet = user.get('currentBet');
-					if (win) user.set('currentBet',usersCurrentBet * k)
+					const usersCurrentBet = user.get('betAmount');
+					if (win) user.set('betAmount',usersCurrentBet * k)
 				});
 
 
