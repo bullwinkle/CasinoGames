@@ -157,6 +157,9 @@ function transformSocketsToUsers(sockets={}) {
 			result[socketJson[groupBy]] || (result[socketJson[groupBy]] = userDefaults());
 			const user = result[socketJson[groupBy]];
 			if (!user.id) user.id = socketJson[groupBy];
+			const prefix = `[${user.id}]`;
+			if (!user.nickname.startsWith(prefix))
+				user.nickname = `${prefix} ${user.nickname}`;
 			user.connections || (user.connections = []);
 			user.connections.push(socketJson);
 			return result;
