@@ -86,15 +86,15 @@ class GameDoubleService {
 		})
 		.then(delay(6000))
 		.then(()=>{
-			this.gameDoubleState.status = STATUS.FINISH;
-			this.gameDoubleState.isAnimating = false;
 
 			Object.values(this.gameDoubleState.users.toJSON())
 				.forEach((user)=>{
-					if (wasBetPlaced) {
-						updateUser(user,this.gameDoubleState.cellNumber)
-					}
+					if (!wasBetPlaced(user)) return;
+					updateUser(user,this.gameDoubleState.cellNumber);
 				});
+
+			this.gameDoubleState.status = STATUS.FINISH;
+			this.gameDoubleState.isAnimating = false;
 		})
 		.then(delay(5000))
 		.then(()=>{

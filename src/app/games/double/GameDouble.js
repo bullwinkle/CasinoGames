@@ -73,14 +73,6 @@ export class GameDouble extends Marionette.View {
 		this.setState = this.setState.bind(this);
 	}
 
-	getUser() {
-		return new Promise((rs,rj)=>{
-			app.wsApi.emit(
-				WS_EVENTS.ACTION_GET_USER, rs
-			)
-		})
-	}
-
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);
 		initBindings(this.$el, 'property-binding-user', this.currentUser);
@@ -243,6 +235,14 @@ export class GameDouble extends Marionette.View {
 		const translateTo = parentsCenterPoint - (offsetInteger + offsetDecimal);
 
 		this.ui.animatable.css('left', `calc(-100% + ${translateTo}px)`);
+	}
+
+	getUser() {
+		return new Promise((rs,rj)=>{
+			app.wsApi.emit(
+				WS_EVENTS.ACTION_GET_USER, rs
+			)
+		})
 	}
 
 	updateState (user=null) {
