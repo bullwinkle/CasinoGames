@@ -18,6 +18,7 @@ exports.Users = class Users {
 			} else {
 				const newUser = {
 					id: userId,
+					nickname: `Guest (${userId})`
 					// connections: [socket]
 				};
 				users[userId] = userDefaults(newUser);
