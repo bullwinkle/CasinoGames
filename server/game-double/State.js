@@ -50,7 +50,9 @@ class GameDoubleState {
 	reset () {
 		this.status = STATUS.STOPPED;
 		this.isAnimating = false;
-		// this.users.splice(0,this.users.length);
+		Object.values(this.users).forEach(user=>{
+			user.betOn = '';
+		})
 	}
 
 	toJSON () {

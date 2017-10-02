@@ -71,11 +71,6 @@ export class GameDouble extends Marionette.View {
 		});
 
 		this.setState = this.setState.bind(this);
-		// this.listenTo(this.currentUser,{
-		// 	'change:betOn': (m,betOn) => {
-		// 		app.wsApi.emit(WS_EVENTS.ACTION_UPDATE_USER,this.currentUser.toJSON())
-		// 	}
-		// })
 	}
 
 	getUser() {
@@ -90,33 +85,19 @@ export class GameDouble extends Marionette.View {
 		initBindings(this.$el, 'property-binding', this.model);
 		initBindings(this.$el, 'property-binding-user', this.currentUser);
 
-		// this.currentUser.set(FAKE_USER);
 		this.showChildView("users",this.usersView);
 
 		// this.startGame();
 
 		this.getUser()
 			.then(user=>{
-				this.currentUser.set(user)
+				this.currentUser.set(user);
 				this.initWebSocket();
 			})
-
-		// this.ui.betInput.on('input paste change', _.debounce((e)=>{
-		// 	console.log('handler works',e)
-		//
-		// 	app.wsApi.emit(
-		// 		WS_EVENTS.ACTION_UPDATE_USER,
-		// 		this.currentUser.toJSON(),
-		// 		(state) => {
-		// 			// this.model.set(state);
-		// 			// const updatedUsers = state.users;
-		// 			// const updatedUser = updatedUsers.find(user => user.id === this.currentUser.get('id'));
-		// 			// this.currentUser.set(updatedUser);
-		// 			// this.usersCollection.set(updatedUsers,{merge:true})
-		// 		}
-		// 	)
-		//
-		// },200));
+			.then(()=>{
+				return this.updateState()
+			})
+			.then(this.setState)
 	}
 
 	initWebSocket () {
@@ -131,8 +112,6 @@ export class GameDouble extends Marionette.View {
 					this.model.set(other);
 					this.usersCollection.set(users,{merge:true});
 
-					//regular updating current user
-					// if (currentUser && (this.currentUser.get('id') === -1 || state.status === STATUS.FINISH)) {
 					if (currentUser ) {
 						this.currentUser.set(currentUser);
 					}
@@ -140,22 +119,6 @@ export class GameDouble extends Marionette.View {
 
 
 			})
-
-
-		// users to just first updating current user to know it`s user.id
-		// app.wsApi.on(WS_EVENTS.USER_UPDATED,(user)=>{
-		// 	console.warn('WS_EVENTS.USER_UPDATED',user);
-		// 	this.currentUser.set(user);
-		// });
-		// App.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,(payload)=>{
-		// 	console.warn('WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED',payload)
-		// });
-	}
-
-	reset () {
-		this.model.set({
-			status: GameDoubleState.STATUS.STOPPED
-		});
 	}
 
 	onUserBetAmountChange () {
@@ -210,33 +173,36 @@ export class GameDouble extends Marionette.View {
 			case "last":
 				this.currentUser.set('betAmount', this.model.get('betAmount_previous') || 0);
 				break;
+
 			case "+10":
 				this.currentUser.set('betAmount', currentAmount + 10);
 				break;
+
 			case "+100":
 				this.currentUser.set('betAmount', currentAmount + 100);
 				break;
+
 			case "+500":
 				this.currentUser.set('betAmount', currentAmount + 500);
 				break;
+
 			case "+1000":
 				this.currentUser.set('betAmount', currentAmount + 1000);
 				break;
+
 			case "1/2":
 				this.currentUser.set('betAmount', currentAmount / 2);
 				break;
+
 			case "x2":
 				this.currentUser.set('betAmount', currentAmount * 2);
 				break;
+
 			case "max":
 				this.currentUser.set('betAmount', this.currentUser.get('balance'));
 				break;
 		}
 	}
-
-	// onBetButtonClick (e) {
-	// 	setTimeout(()=>{ this.updateState(); },20)
-	// }
 
 	onAnimationStart(e) {
 		// console.warn('onAnimationStart', e);
@@ -279,11 +245,11 @@ export class GameDouble extends Marionette.View {
 		this.ui.animatable.css('left', `calc(-100% + ${translateTo}px)`);
 	}
 
-	updateState () {
+	updateState (user=null) {
 		return new Promise((resolve,reject)=>{
 			app.wsApi.emit(
 				WS_EVENTS.ACTION_UPDATE_USER,
-				null,
+				user,
 				resolve
 			)
 		})
@@ -296,8 +262,4 @@ export class GameDouble extends Marionette.View {
 		this.usersCollection.set(updatedUsers,{merge:true});
 		this.model.set(state);
 	}
-
-	// updateState () {
-	//
-	// }
 }

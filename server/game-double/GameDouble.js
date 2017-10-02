@@ -21,9 +21,6 @@ class GameDoubleService {
 		this.startGame();
 		// this.startFakeUsersStream();
 
-		// setInterval(() => {
-		// 	emit(io,"CONNECTIONS",this.gameDoubleState.users);
-		// },2000)
 	}
 
 	initializeSocket (socket) {
@@ -34,39 +31,34 @@ class GameDoubleService {
 				cb(state);
 			} else {
 				const userToUpdate = this.gameDoubleState.users.getBySocket(socket);
-				// console.log(userToUpdate);
+
 				if (userToUpdate) Object.assign(userToUpdate,user);
 				else {
-					console.warn(`===========`)
-					console.warn(``)
-					console.warn(`not found user to update`)
-					console.warn(state.users)
-					console.warn(user)
-					console.warn(userToUpdate)
-					console.warn(``)
-					console.warn(`===========`)
-				};
+					console.warn(`===========`);
+					console.warn(``);
+					console.warn(`not found user to update`);
+					console.warn(state.users);
+					console.warn(user);
+					console.warn(userToUpdate);
+					console.warn(``);
+					console.warn(`===========`);
+				}
 
 				this.io.sockets.emit(
 					WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
-					state
+					this.gameDoubleState.toJSON()
 				);
 			}
 		});
 
 		socket.on(WS_EVENTS.ACTION_GET_USER,(cb)=>{
 			cb(this.gameDoubleState.users.getBySocket(socket))
-		})
+		});
 
 		socket.emit(
 			WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
 			this.gameDoubleState.toJSON()
 		);
-
-		// socket.emit(
-		// 	WS_EVENTS.USER_UPDATED,
-		// 	getUserByIp(socket,this.gameDoubleState.users)
-		// );
 	}
 
 	// startFakeUsersStream () {
