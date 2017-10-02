@@ -19,8 +19,6 @@ class GameDoubleService {
 		this.gameDoubleState = new GameDoubleState({io});
 
 		this.startGame();
-		// this.startFakeUsersStream();
-
 	}
 
 	initializeSocket (socket) {
@@ -61,36 +59,11 @@ class GameDoubleService {
 		);
 	}
 
-	// startFakeUsersStream () {
-	// 	let tmpArr = usersMock.map(el=>({...el}));
-	//
-	// 	GameDoubleService.fakeUsersStreamStarted = setInterval(()=>{
-	//
-	// 		if (this.gameDoubleState.status !== STATUS.WAITING_FOR_BETS) {
-	// 			return;
-	// 		}
-	//
-	// 		if (!tmpArr.length) {
-	// 			tmpArr.push(
-	// 				...usersMock.map( el =>({...el}) )
-	// 			);
-	// 		}
-	// 		const randomIndex = Math.floor(Math.random()*tmpArr.length);
-	// 		const randomUserFromList = tmpArr.splice(randomIndex,1)[0];
-	// 		if (randomUserFromList)
-	// 			this.gameDoubleState.users.push(randomUserFromList);
-	//
-	// 	},9500/tmpArr.length);
-	//
-	// 	return GameDoubleService.fakeUsersStreamStarted;
-	// }
-
 	startGame () {
 		console.log('[START GAME]');
 
 		this.gameLoop(getSecretValues());
 	}
-
 
 	gameLoop ({ sercretCellNumber, sercretCellDecimal }) {
 		console.log('[GAME LOOP STARTED]');
@@ -136,6 +109,8 @@ class GameDoubleService {
 }
 
 module.exports.GameDoubleService = GameDoubleService
+
+
 
 function getSecretValues () {
 	const sercretCellNumber = Math.floor(Math.random() * 14);

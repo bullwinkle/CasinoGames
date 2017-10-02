@@ -11,33 +11,6 @@ exports.Users = class Users {
 		if (state) this.state = state;
 		if (onChanges) this.onChanges = typeof onChanges === 'function' ? onChanges : ()=>{};
 
-		// const usersArray = this._array = new Array(...arrayArgs);
-		//
-		// const mutationMethods = ['push','pop','shift','unshift','splice'];
-		// const immutableMethods = ['find','filter','concat'];
-		// const arrayMethods = mutationMethods.concat(immutableMethods);
-		//
-		// arrayMethods.forEach((arrayMethod)=>{
-		// 	this[arrayMethod] = (...args)=>{
-		// 		const result = usersArray[arrayMethod](...args);
-		// 		if (mutationMethods.includes(arrayMethod)) {
-		// 			this.onChanges(this.toJSON());
-		// 		}
-		// 		return result;
-		// 	}
-		// });
-		//
-		// function updateUsers () {
-		// 	const newUsers = getUsers(io)
-		// 		.map(networkUser => ({
-		// 			...networkUser,
-		// 			...(usersArray.find(u=>u.id===networkUser.id)||{})
-		// 		}));
-		//
-		// 	usersArray.splice(0,usersArray.length);
-		// 	usersArray.push(...newUsers);
-		// }
-
 		io.on('connection', (socket) => {
 			const userId = getConnectionIp(socket);
 			if (users[userId]) {
