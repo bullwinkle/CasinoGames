@@ -1,6 +1,8 @@
+export {PUT_ON, STATUS } from "../../server/game-double/constants";
+
 export {
 	CONNECT_URL_WEBSOCKET,
-	WS_EVENTS
+	WS_EVENTS,
 } from "../../CONFIG";
 
 export const EASING_EQUATIONS = {

@@ -1,4 +1,4 @@
-import {WS_EVENTS} from 'app/constants';
+import {WS_EVENTS,PUT_ON} from 'app/constants';
 import {Backbone, Marionette, $, html2canvas, domtoimage} from 'vendor';
 import {props} from 'app/decorators';
 import {initBindings} from "app/shared/initBindings";
@@ -7,7 +7,6 @@ import {GameDoubleState} from "./models/gameDoubleState";
 import {GameDoubleUsersView} from "./users/UsersView";
 import {store} from "./store";
 import {usersMock} from "./users/usersMock";
-import {STATUS} from "../../../../server/game-double/constants";
 
 const ANIMATION_CLASS_NAME = 'spin';
 
@@ -143,6 +142,23 @@ export class GameDouble extends Marionette.View {
 				this.$el.find(selector).prop('disabled',false);
 				break;
 
+			case GameDoubleState.STATUS.FINISH:
+				this.usersCollection.forEach(user=>{
+					const {win,k} = isUserWinner(user,this.model.get('cellNumber'))
+					const currentAmount = user.get('betAmount')
+					console.log(user.get('betAmount'))
+					setTimeout(()=>{
+						if (win) {
+							user.set('betAmount',currentAmount * k)
+						} else {
+							user.set('betAmount',currentAmount * -1)
+						}
+					})
+					console.log(user)
+					console.log(user.get('betAmount'))
+				});
+				break;
+
 			default:
 				this.$el.find(selector).prop('disabled',true);
 				break;
@@ -261,5 +277,28 @@ export class GameDouble extends Marionette.View {
 		this.currentUser.set(updatedUser);
 		this.usersCollection.set(updatedUsers,{merge:true});
 		this.model.set(state);
+	}
+}
+
+
+
+function isUserWinner(user, int ) {
+	switch (user.get('betOn')) {
+		case PUT_ON.RED: return {
+			win: (int >=1 && int < 8),
+			k: 2
+		};
+		case PUT_ON.GREEN: return {
+			win: int === 0,
+			k: 14
+		};
+		case PUT_ON.BLACK: return {
+			win: int >= 8 && int < 15,
+			k: 2
+		};
+		default: return {
+			win: false,
+			k:1
+		}
 	}
 }
