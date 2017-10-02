@@ -1,5 +1,3 @@
-# WebpackBin project
-
 ## Start
 
 `npm install`
