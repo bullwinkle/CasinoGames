@@ -10,8 +10,6 @@ const {WS_EVENTS} = require('../../CONFIG');
 class GameDoubleService {
 	constructor({io}){
 
-		console.log('new GameDoubleService')
-
 		if (GameDoubleService.instance) {
 			return GameDoubleService.instance
 		}
@@ -29,49 +27,71 @@ class GameDoubleService {
 	}
 
 	initializeSocket (socket) {
-		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user)=>{
-			// console.warn(WS_EVENTS.ACTION_UPDATE_USER,user)
-			const userToUpdate = getUserByIp(socket,this.gameDoubleState.users);
-			console.log(userToUpdate,user)
-			console.log(user);
-			Object.assign(userToUpdate,user);
-			this.gameDoubleState.emitChanges();
+		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user,cb)=>{
+			const state = this.gameDoubleState.toJSON();
+
+			if (user == null) {
+				cb(state);
+			} else {
+				const userToUpdate = this.gameDoubleState.users.getBySocket(socket);
+				// console.log(userToUpdate);
+				if (userToUpdate) Object.assign(userToUpdate,user);
+				else {
+					console.warn(`===========`)
+					console.warn(``)
+					console.warn(`not found user to update`)
+					console.warn(state.users)
+					console.warn(user)
+					console.warn(userToUpdate)
+					console.warn(``)
+					console.warn(`===========`)
+				};
+
+				this.io.sockets.emit(
+					WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
+					state
+				);
+			}
 		});
+
+		socket.on(WS_EVENTS.ACTION_GET_USER,(cb)=>{
+			cb(this.gameDoubleState.users.getBySocket(socket))
+		})
 
 		socket.emit(
 			WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
-			GameDoubleService.instance.gameDoubleState.toJSON()
+			this.gameDoubleState.toJSON()
 		);
 
-		socket.emit(
-			WS_EVENTS.USER_UPDATED,
-			getUserByIp(socket,this.gameDoubleState.users)
-		);
+		// socket.emit(
+		// 	WS_EVENTS.USER_UPDATED,
+		// 	getUserByIp(socket,this.gameDoubleState.users)
+		// );
 	}
 
-	startFakeUsersStream () {
-		let tmpArr = usersMock.map(el=>({...el}));
-
-		GameDoubleService.fakeUsersStreamStarted = setInterval(()=>{
-
-			if (this.gameDoubleState.status !== STATUS.WAITING_FOR_BETS) {
-				return;
-			}
-
-			if (!tmpArr.length) {
-				tmpArr.push(
-					...usersMock.map( el =>({...el}) )
-				);
-			}
-			const randomIndex = Math.floor(Math.random()*tmpArr.length);
-			const randomUserFromList = tmpArr.splice(randomIndex,1)[0];
-			if (randomUserFromList)
-				this.gameDoubleState.users.push(randomUserFromList);
-
-		},9500/tmpArr.length);
-
-		return GameDoubleService.fakeUsersStreamStarted;
-	}
+	// startFakeUsersStream () {
+	// 	let tmpArr = usersMock.map(el=>({...el}));
+	//
+	// 	GameDoubleService.fakeUsersStreamStarted = setInterval(()=>{
+	//
+	// 		if (this.gameDoubleState.status !== STATUS.WAITING_FOR_BETS) {
+	// 			return;
+	// 		}
+	//
+	// 		if (!tmpArr.length) {
+	// 			tmpArr.push(
+	// 				...usersMock.map( el =>({...el}) )
+	// 			);
+	// 		}
+	// 		const randomIndex = Math.floor(Math.random()*tmpArr.length);
+	// 		const randomUserFromList = tmpArr.splice(randomIndex,1)[0];
+	// 		if (randomUserFromList)
+	// 			this.gameDoubleState.users.push(randomUserFromList);
+	//
+	// 	},9500/tmpArr.length);
+	//
+	// 	return GameDoubleService.fakeUsersStreamStarted;
+	// }
 
 	startGame () {
 		console.log('[START GAME]');
@@ -104,11 +124,12 @@ class GameDoubleService {
 			this.gameDoubleState.status = STATUS.FINISH;
 			this.gameDoubleState.isAnimating = false;
 
-			this.gameDoubleState.users
-				.filter(wasBetPlaced)
-				.forEach( user =>
-					updateUser(user,this.gameDoubleState.cellNumber)
-				);
+			Object.values(this.gameDoubleState.users.toJSON())
+				.forEach((user)=>{
+					if (wasBetPlaced) {
+						updateUser(user,this.gameDoubleState.cellNumber)
+					}
+				});
 		})
 		.then(delay(5000))
 		.then(()=>{
@@ -162,10 +183,10 @@ function isUserWinner(user, int ) {
 function updateUser (user={},winningInt=0) {
 	const {win,k} = isUserWinner(user,winningInt);
 	if (win) {
-		user.betAmount = user.betAmount * k;
-		user.balance = user.balance + user.betAmount;
+		// user.betAmount = user.betAmount * k;
+		user.balance = user.balance + user.betAmount * k;
 	} else {
-		user.balance = user.balance - user.betAmount ;
+		user.balance = user.balance - user.betAmount;
 	}
 }
 
@@ -186,10 +207,10 @@ function getConnectionIp (socket) {
 	}
 }
 
-function getUserByIp (socket,users) {
+function getUserByIp (socket) {
 	const userId = getConnectionIp(socket);
-	if (!userId) return null;
+	if (!userId) return console.warn('cannot define ip');
 
-	const result = users.toJSON().find(user => user.id === userId)
+	const result = users[userId]
 	return result;
 }

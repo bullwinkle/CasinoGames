@@ -12,9 +12,6 @@ class GameDoubleState {
 		,20);
 
 		this._users = new Users({io: this.io,state:this,onChanges:this.emitChanges});
-
-
-		setTimeout(()=>{console.log(new Array())},1000)
 	}
 	get isAnimating () { return this._isAnimating }
 	set isAnimating (val) {
@@ -53,7 +50,7 @@ class GameDoubleState {
 	reset () {
 		this.status = STATUS.STOPPED;
 		this.isAnimating = false;
-		this.users.splice(0,this.users.length);
+		// this.users.splice(0,this.users.length);
 	}
 
 	toJSON () {
@@ -61,7 +58,7 @@ class GameDoubleState {
 			cellNumber:this.cellNumber,
 			cellDecimal:this.cellDecimal,
 			status:this.status,
-			users:this.users,
+			users:this.users.toArray(),
 			isAnimating: this.isAnimating
 		}
 	}

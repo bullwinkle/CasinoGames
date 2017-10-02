@@ -7,7 +7,8 @@ const users = new UserCollection();
 
 state.listenTo(user,"change",() => {
 	state.set(_.transform(user.toJSON(),(res,val,key)=>{
-		res[`user.${key}`] = val;
+		const newKey = `user.${key}`;
+		res[newKey] = val;
 		return res;
 	},{}))
 });

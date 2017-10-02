@@ -26,6 +26,7 @@ const PUT_ON = {
 		'user.balance': 0,
 		'user.nickname': '',
 		'user.betAmount': '',
+		'user.betOn': '',
 	},
 	computed: {
 		displayBalance: {

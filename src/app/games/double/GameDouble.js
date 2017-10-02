@@ -28,6 +28,7 @@ const FAKE_USER = {
 	ui: {
 		animatable: '[animatable]',
 		spinnerCellsContainer: '.spinner-cells',
+		betInput: '.bet-input',
 		betAction: '[bet-action]',
 		balanceValue: '[balance]',
 		betButton: '[bet-button]'
@@ -36,13 +37,15 @@ const FAKE_USER = {
 		'animationend @ui.animatable': 'onAnimationEnd',
 		'animationstart @ui.animatable': 'onAnimationStart',
 		'click @ui.betAction': 'onBetActionClick',
-		'click @ui.betButton': 'onBetButtonClick'
+		'click @ui.betButton': 'onBetButtonClick',
 	},
 	modelEvents: {
 		'change:cellNumber': 'updateSpinnerValue',
 		'change:cellDecimal': 'updateSpinnerValue',
 		'change:status': 'onStatusChange',
 		'change:isAnimating': 'onIsAnimatingChange',
+		'change:user.betAmount': 'onUserBetAmountChange',
+		'change:user.betOn': 'onUserBetOnChange',
 	}
 })
 export class GameDouble extends Marionette.View {
@@ -67,6 +70,7 @@ export class GameDouble extends Marionette.View {
 			collection: this.usersCollection
 		});
 
+		this.setState = this.setState.bind(this);
 		// this.listenTo(this.currentUser,{
 		// 	'change:betOn': (m,betOn) => {
 		// 		app.wsApi.emit(WS_EVENTS.ACTION_UPDATE_USER,this.currentUser.toJSON())
@@ -74,38 +78,75 @@ export class GameDouble extends Marionette.View {
 		// })
 	}
 
+	getUser() {
+		return new Promise((rs,rj)=>{
+			app.wsApi.emit(
+				WS_EVENTS.ACTION_GET_USER, rs
+			)
+		})
+	}
+
 	onRender() {
 		initBindings(this.$el, 'property-binding', this.model);
 		initBindings(this.$el, 'property-binding-user', this.currentUser);
 
-		this.currentUser.set(FAKE_USER);
+		// this.currentUser.set(FAKE_USER);
 		this.showChildView("users",this.usersView);
 
 		// this.startGame();
-		this.initWebSocket();
+
+		this.getUser()
+			.then(user=>{
+				this.currentUser.set(user)
+				this.initWebSocket();
+			})
+
+		// this.ui.betInput.on('input paste change', _.debounce((e)=>{
+		// 	console.log('handler works',e)
+		//
+		// 	app.wsApi.emit(
+		// 		WS_EVENTS.ACTION_UPDATE_USER,
+		// 		this.currentUser.toJSON(),
+		// 		(state) => {
+		// 			// this.model.set(state);
+		// 			// const updatedUsers = state.users;
+		// 			// const updatedUser = updatedUsers.find(user => user.id === this.currentUser.get('id'));
+		// 			// this.currentUser.set(updatedUser);
+		// 			// this.usersCollection.set(updatedUsers,{merge:true})
+		// 		}
+		// 	)
+		//
+		// },200));
 	}
 
 	initWebSocket () {
-		app.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,(state)=>{
-			console.warn('WS_EVENTS.GAME_DOUBLE_STATE_CHANGED',state);
-			const {users,...other} = state;
-			const currentUser = users.find(user => user.id === this.currentUser.id);
+		this.updateState()
+			.then(()=>{
 
-			this.model.set(other);
-			this.usersCollection.set(users,{merge:true});
+				app.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,(state)=>{
+					console.warn('WS_EVENTS.GAME_DOUBLE_STATE_CHANGED',state);
+					const {users,...other} = state;
+					const currentUser = users.find(user => user.id === this.currentUser.get('id'));
 
-			//regular updating current user
-			if (currentUser && (this.currentUser.get('id') === -1 || state.status === STATUS.FINISH)) {
-				this.currentUser.set(currentUser);
-			}
-		});
+					this.model.set(other);
+					this.usersCollection.set(users,{merge:true});
+
+					//regular updating current user
+					// if (currentUser && (this.currentUser.get('id') === -1 || state.status === STATUS.FINISH)) {
+					if (currentUser ) {
+						this.currentUser.set(currentUser);
+					}
+				});
+
+
+			})
 
 
 		// users to just first updating current user to know it`s user.id
-		app.wsApi.on(WS_EVENTS.USER_UPDATED,(user)=>{
-			console.warn('WS_EVENTS.USER_UPDATED',user);
-			this.currentUser.set(user);
-		});
+		// app.wsApi.on(WS_EVENTS.USER_UPDATED,(user)=>{
+		// 	console.warn('WS_EVENTS.USER_UPDATED',user);
+		// 	this.currentUser.set(user);
+		// });
 		// App.wsApi.on(WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED,(payload)=>{
 		// 	console.warn('WS_EVENTS.GAME_DOUBLE_STATUS_CHANGED',payload)
 		// });
@@ -115,6 +156,20 @@ export class GameDouble extends Marionette.View {
 		this.model.set({
 			status: GameDoubleState.STATUS.STOPPED
 		});
+	}
+
+	onUserBetAmountChange () {
+		app.wsApi.emit(
+			WS_EVENTS.ACTION_UPDATE_USER,
+			this.currentUser.toJSON()
+		)
+	}
+
+	onUserBetOnChange () {
+		app.wsApi.emit(
+			WS_EVENTS.ACTION_UPDATE_USER,
+			this.currentUser.toJSON()
+		)
 	}
 
 	onStatusChange (m,status) {
@@ -179,9 +234,9 @@ export class GameDouble extends Marionette.View {
 		}
 	}
 
-	onBetButtonClick (e) {
-		setTimeout(()=>{ this.submitBet(); },20)
-	}
+	// onBetButtonClick (e) {
+	// 	setTimeout(()=>{ this.updateState(); },20)
+	// }
 
 	onAnimationStart(e) {
 		// console.warn('onAnimationStart', e);
@@ -224,10 +279,25 @@ export class GameDouble extends Marionette.View {
 		this.ui.animatable.css('left', `calc(-100% + ${translateTo}px)`);
 	}
 
-	submitBet () {
-		app.wsApi.emit(
-			WS_EVENTS.ACTION_UPDATE_USER,
-			this.currentUser.toJSON()
-		)
+	updateState () {
+		return new Promise((resolve,reject)=>{
+			app.wsApi.emit(
+				WS_EVENTS.ACTION_UPDATE_USER,
+				null,
+				resolve
+			)
+		})
 	}
+
+	setState (state) {
+		const updatedUsers = state.users;
+		const updatedUser = updatedUsers.find(user => user.id === this.currentUser.get('id'));
+		this.currentUser.set(updatedUser);
+		this.usersCollection.set(updatedUsers,{merge:true});
+		this.model.set(state);
+	}
+
+	// updateState () {
+	//
+	// }
 }
