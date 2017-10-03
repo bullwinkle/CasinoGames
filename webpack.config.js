@@ -1,6 +1,7 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 var loaders = [
 	{
@@ -73,7 +74,7 @@ module.exports = {
 		}),
 		new webpack.DefinePlugin({
 			'process.env': JSON.stringify(process.env)
-		})
+		}),
 	],
 	module: {
 		loaders: loaders
@@ -84,3 +85,7 @@ module.exports = {
 		historyApiFallback: true
 	}
 };
+
+if (process.env.NODE_ENV === 'production') {
+	module.exports.plugins.push(new UglifyJSPlugin());
+}
