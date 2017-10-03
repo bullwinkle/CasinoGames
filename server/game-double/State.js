@@ -53,6 +53,8 @@ class GameDoubleState {
 		return result;
 	}
 
+	get updatedAt () { return this._updatedAt }
+
 	reset () {
 		this.status = STATUS.STOPPED;
 		this.isAnimating = false;
@@ -68,7 +70,8 @@ class GameDoubleState {
 			cellDecimal:this.cellDecimal,
 			status:this.status,
 			users:this.users.toArray(),
-			isAnimating: this.isAnimating
+			isAnimating: this.isAnimating,
+			updatedAt: this._updatedAt
 		}
 	}
 }
@@ -78,6 +81,7 @@ Object.assign(GameDoubleState.prototype,{
 	_cellDecimal:0,
 	_status: STATUS.STOPPED,
 	_users: [],
+	_updatedAt: 0
 });
 exports.GameDoubleState = GameDoubleState;
 

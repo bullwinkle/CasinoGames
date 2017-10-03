@@ -26,20 +26,20 @@ class GameDoubleService {
 
 
 
-		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user,{time},cb)=>{
+		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user,cb)=>{
 			const state = this.gameDoubleState.toJSON();
-
-			if (!time) {
-				console.warn('UPDATE: time needed');
-				return cb(state);
-			}
-			if (time < this.gameDoubleState.lastUpdated) {
-				console.warn('UPDATE: old data detected, return current');
-				return cb(state);
-			}
 
 			if ( user == null ) {
 				// no user - just update
+				return cb(state);
+			}
+
+			if (!user.updatedAt) {
+				console.warn('UPDATE: time needed');
+				return cb(state);
+			}
+			if (user.updatedAt < this.gameDoubleState.updatedAt) {
+				console.warn('UPDATE: old data detected, return current');
 				return cb(state);
 			}
 

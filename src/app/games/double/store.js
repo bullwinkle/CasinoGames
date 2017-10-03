@@ -10,7 +10,11 @@ state.listenTo(user,"change",() => {
 		const newKey = `user.${key}`;
 		res[newKey] = val;
 		return res;
-	},{}))
+	},{}));
+
+	user.set({
+		updatedAt: Date.now()
+	})
 });
 
 class GameDoubleStore {
