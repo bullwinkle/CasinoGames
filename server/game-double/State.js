@@ -6,25 +6,25 @@ const Users = require("./Users").Users;
 class GameDoubleState {
 	constructor ({io}) {
 		this.io = io;
-		this.emitChanges = debounce(() =>
-			emit(this.io, WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,this.toJSON())
-		);
+		this.emitChanges = debounce(() =>{
+			this.updateTime();
+			io.sockets.emit(WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,this.toJSON());
+		});
 
 		this._users = new Users({io: this.io,state:this,onChanges:this.emitChanges});
-		this._updatedAt = 0;
 	}
+
+	get updatedAt () { return this._updatedAt }
 
 	get isAnimating () { return this._isAnimating }
 	set isAnimating (val) {
 		const result = this._isAnimating = val;
-		this._updatedAt = Date.now();
 		this.emitChanges();
 		return result;
 	}
 	get cellNumber () { return this._cellNumber }
 	set cellNumber (val) {
 		const result = this._cellNumber = val;
-		this._updatedAt = Date.now();
 		this.emitChanges();
 		return result;
 	}
@@ -32,7 +32,6 @@ class GameDoubleState {
 	get cellDecimal () { return this._cellDecimal }
 	set cellDecimal (val) {
 		const result = this._cellDecimal = val;
-		this._updatedAt = Date.now();
 		this.emitChanges();
 		return result;
 	}
@@ -40,7 +39,6 @@ class GameDoubleState {
 	get status () { return this._status }
 	set status (val) {
 		const result = this._status = val;
-		this._updatedAt = Date.now();
 		this.emitChanges();
 		return result;
 	}
@@ -48,12 +46,13 @@ class GameDoubleState {
 	get users () { return this._users }
 	set users (val) {
 		const result = this._users = val;
-		this._updatedAt = Date.now();
 		this.emitChanges();
 		return result;
 	}
 
-	get updatedAt () { return this._updatedAt }
+	updateTime () {
+		this._updatedAt = Date.now();
+	}
 
 	reset () {
 		this.status = STATUS.STOPPED;
@@ -61,7 +60,7 @@ class GameDoubleState {
 		Object.values(this.users.toJSON()).forEach(user=>{
 			user.betOn = '';
 		});
-		this.__updatedAt = Date.now();
+		this._updatedAt = Date.now();
 	}
 
 	toJSON () {
@@ -71,9 +70,10 @@ class GameDoubleState {
 			status:this.status,
 			users:this.users.toArray(),
 			isAnimating: this.isAnimating,
-			updatedAt: this._updatedAt
+			updatedAt: this.updatedAt
 		}
 	}
+
 }
 Object.assign(GameDoubleState.prototype,{
 	_isAnimating: false,
@@ -84,7 +84,3 @@ Object.assign(GameDoubleState.prototype,{
 	_updatedAt: 0
 });
 exports.GameDoubleState = GameDoubleState;
-
-function emit (io,event,...args) {
-	return io.sockets.emit(event,...args);
-}
