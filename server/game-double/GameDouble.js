@@ -88,7 +88,7 @@ class GameDoubleService {
 			this.gameDoubleState.status = STATUS.WAITING_FOR_BETS;
 			rs('ok');
 		})
-		.then(delay(10000))
+		.then(delay(20000))
 		.then(()=>{
 			this.gameDoubleState.status = STATUS.IS_PLAYING_OUT;
 			this.gameDoubleState.isAnimating = true;
