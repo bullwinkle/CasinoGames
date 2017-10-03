@@ -1,11 +1,12 @@
 const lodash = require("lodash");
-const GameDoubleState = require("./State").GameDoubleState;
 const {
 	STATUS,
 	PUT_ON
 } = require("./constants");
-const {usersMock} = require("../../src/app/games/double/users/usersMock");
+
+
 const {WS_EVENTS} = require('../../CONFIG');
+const GameDoubleState = require("./State").GameDoubleState;
 
 class GameDoubleService {
 	constructor({io}){
@@ -22,31 +23,44 @@ class GameDoubleService {
 	}
 
 	initializeSocket (socket) {
-		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user,cb)=>{
+
+
+
+		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user,{time},cb)=>{
 			const state = this.gameDoubleState.toJSON();
 
-			if (user == null) {
-				cb(state);
-			} else {
-				const userToUpdate = this.gameDoubleState.users.getBySocket(socket);
-
-				if (userToUpdate) Object.assign(userToUpdate,user);
-				else {
-					console.warn(`===========`);
-					console.warn(``);
-					console.warn(`not found user to update`);
-					console.warn(state.users);
-					console.warn(user);
-					console.warn(userToUpdate);
-					console.warn(``);
-					console.warn(`===========`);
-				}
-
-				this.io.sockets.emit(
-					WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
-					this.gameDoubleState.toJSON()
-				);
+			if (!time) {
+				console.warn('UPDATE: time needed');
+				return cb(state);
 			}
+			if (time < this.gameDoubleState.lastUpdated) {
+				console.warn('UPDATE: old data detected, return current');
+				return cb(state);
+			}
+
+			if ( user == null ) {
+				// no user - just update
+				return cb(state);
+			}
+
+			const userToUpdate = this.gameDoubleState.users.getBySocket(socket);
+
+			if (userToUpdate) Object.assign(userToUpdate,user);
+			else {
+				console.warn(`===========`);
+				console.warn(``);
+				console.warn(`not found user to update`);
+				console.warn(state.users);
+				console.warn(user);
+				console.warn(userToUpdate);
+				console.warn(``);
+				console.warn(`===========`);
+			}
+
+			this.io.sockets.emit(
+				WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
+				this.gameDoubleState.toJSON()
+			);
 		});
 
 		socket.on(WS_EVENTS.ACTION_GET_USER,(cb)=>{
@@ -119,7 +133,11 @@ function getSecretValues () {
 	return { sercretCellNumber, sercretCellDecimal };
 }
 
-function emit (io,event,...args) {
+function emit (socket,event,...args) {
+	return io.sockets.emit(event,...args);
+}
+
+function emitBroadcast (io,event,...args) {
 	return io.sockets.emit(event,...args);
 }
 

@@ -1,19 +1,32 @@
-const users = {}
-Object.defineProperty(users,'length',{
+const USERS = {}
+Object.defineProperty(USERS,'length',{
 	get () {
 		return Object.keys(this).length
 	}
 });
 
+let _lastUpdated = 0;
+
 exports.Users = class Users {
+
+	get updatedAt () {
+		return _lastUpdated;
+	}
+
+	update() {
+		_lastUpdated = Date.now();
+	}
+
 	constructor ({io,state,onChanges},...arrayArgs) {
+		this._lastUpdated = 0;
+
 		if (io) this.io = io;
 		if (state) this.state = state;
 		if (onChanges) this.onChanges = typeof onChanges === 'function' ? onChanges : ()=>{};
 
 		io.on('connection', (socket) => {
 			const userId = getConnectionIp(socket);
-			if (users[userId]) {
+			if (USERS[userId]) {
 				// users[userId].connections.push(socket)
 			} else {
 				const newUser = {
@@ -21,37 +34,41 @@ exports.Users = class Users {
 					nickname: `Guest (${userId})`
 					// connections: [socket]
 				};
-				users[userId] = userDefaults(newUser);
+				USERS[userId] = userDefaults(newUser);
 			}
 
 			socket.on('disconnect', (reason) => {
-				const user = users[userId];
+				const user = USERS[userId];
 				if (!user) return;
-				const connectionIndex = users[userId].connections.indexOf(socket)
-				const removedConnection = users[userId].connections.splice(connectionIndex,1)
+				const connectionIndex = USERS[userId].connections.indexOf(socket)
+				const removedConnection = USERS[userId].connections.splice(connectionIndex,1)
 				console.log(removedConnection)
 			});
 
-			console.log(users)
+			console.log(USERS)
 		});
 
 	}
 
 	getBySocket (socket) {
 		const id = getConnectionIp(socket);
-		return users[id]
+		return USERS[id]
+	}
+
+	udateUser (socket) {
+
 	}
 
 	updateById (id,data) {
-		return Object.assign(users[id],data);
+		return Object.assign(USERS[id],data);
 	}
 
 	toJSON() {
-		return users;
+		return USERS;
 	}
 
 	toArray () {
-		return Object.values(users);
+		return Object.values(USERS);
 	}
 
 	toString() {
@@ -59,7 +76,7 @@ exports.Users = class Users {
 	}
 
 	get length () {
-		return Object.keys(users).length;
+		return Object.keys(USERS).length;
 	}
 };
 

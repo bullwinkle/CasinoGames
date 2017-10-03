@@ -6,22 +6,25 @@ const Users = require("./Users").Users;
 class GameDoubleState {
 	constructor ({io}) {
 		this.io = io;
-
 		this.emitChanges = debounce(() =>
 			emit(this.io, WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,this.toJSON())
 		,20);
 
 		this._users = new Users({io: this.io,state:this,onChanges:this.emitChanges});
+		this.lastUpdated = 0;
 	}
+
 	get isAnimating () { return this._isAnimating }
 	set isAnimating (val) {
 		const result = this._isAnimating = val;
+		this.lastUpdated = Date.now();
 		this.emitChanges();
 		return result;
 	}
 	get cellNumber () { return this._cellNumber }
 	set cellNumber (val) {
 		const result = this._cellNumber = val;
+		this.lastUpdated = Date.now();
 		this.emitChanges();
 		return result;
 	}
@@ -29,6 +32,7 @@ class GameDoubleState {
 	get cellDecimal () { return this._cellDecimal }
 	set cellDecimal (val) {
 		const result = this._cellDecimal = val;
+		this.lastUpdated = Date.now();
 		this.emitChanges();
 		return result;
 	}
@@ -36,6 +40,7 @@ class GameDoubleState {
 	get status () { return this._status }
 	set status (val) {
 		const result = this._status = val;
+		this.lastUpdated = Date.now();
 		this.emitChanges();
 		return result;
 	}
@@ -43,6 +48,7 @@ class GameDoubleState {
 	get users () { return this._users }
 	set users (val) {
 		const result = this._users = val;
+		this.lastUpdated = Date.now();
 		this.emitChanges();
 		return result;
 	}
@@ -52,7 +58,8 @@ class GameDoubleState {
 		this.isAnimating = false;
 		Object.values(this.users.toJSON()).forEach(user=>{
 			user.betOn = '';
-		})
+		});
+		this._lastUpdated = Date.now();
 	}
 
 	toJSON () {

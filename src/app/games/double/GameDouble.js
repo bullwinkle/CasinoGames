@@ -113,17 +113,11 @@ export class GameDouble extends Marionette.View {
 	}
 
 	onUserBetAmountChange () {
-		app.wsApi.emit(
-			WS_EVENTS.ACTION_UPDATE_USER,
-			this.currentUser.toJSON()
-		)
+		this.updateState(this.currentUser.toJSON());
 	}
 
 	onUserBetOnChange () {
-		app.wsApi.emit(
-			WS_EVENTS.ACTION_UPDATE_USER,
-			this.currentUser.toJSON()
-		)
+		this.updateState(this.currentUser.toJSON());
 	}
 
 	onStatusChange (m,status) {
@@ -266,6 +260,7 @@ export class GameDouble extends Marionette.View {
 			app.wsApi.emit(
 				WS_EVENTS.ACTION_UPDATE_USER,
 				user,
+				{time: Date.now()},
 				resolve
 			)
 		})
