@@ -5,21 +5,9 @@ Object.defineProperty(USERS,'length',{
 	}
 });
 
-let _lastUpdated = 0;
-
 exports.Users = class Users {
 
-	get updatedAt () {
-		return _lastUpdated;
-	}
-
-	update() {
-		_lastUpdated = Date.now();
-	}
-
 	constructor ({io,state,onChanges},...arrayArgs) {
-		this._lastUpdated = 0;
-
 		if (io) this.io = io;
 		if (state) this.state = state;
 		if (onChanges) this.onChanges = typeof onChanges === 'function' ? onChanges : ()=>{};

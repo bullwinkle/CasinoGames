@@ -26,41 +26,47 @@ class GameDoubleService {
 
 
 
-		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(user,cb)=>{
-			const state = this.gameDoubleState.toJSON();
+		socket.on(WS_EVENTS.ACTION_UPDATE_USER,(userData,cb)=>{
+			const currentState = this.gameDoubleState.toJSON();
 
-			if ( user == null ) {
+			if ( userData == null ) {
 				// no user - just update
-				return cb(state);
+				return cb(currentState);
 			}
 
-			if (!user.updatedAt) {
+			if (!userData.updatedAt) {
 				console.warn('UPDATE: time needed');
-				return cb(state);
+				return cb(currentState);
 			}
-			if (user.updatedAt < this.gameDoubleState.updatedAt) {
+			if (userData.updatedAt < currentState.updatedAt) {
 				console.warn('UPDATE: old data detected, return current');
-				return cb(state);
+				return cb(currentState);
 			}
 
 			const userToUpdate = this.gameDoubleState.users.getBySocket(socket);
 
-			if (userToUpdate) Object.assign(userToUpdate,user);
+			if (userToUpdate) {
+				Object.assign(userToUpdate,userData);
+				this.gameDoubleState.updateTime();
+
+				this.io.sockets.emit(
+					WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
+					this.gameDoubleState.toJSON()
+				);
+			}
 			else {
+				cb(currentState);
+
 				console.warn(`===========`);
 				console.warn(``);
 				console.warn(`not found user to update`);
-				console.warn(state.users);
-				console.warn(user);
+				console.warn(currentState.users);
+				console.warn(userData);
 				console.warn(userToUpdate);
 				console.warn(``);
 				console.warn(`===========`);
 			}
 
-			this.io.sockets.emit(
-				WS_EVENTS.GAME_DOUBLE_STATE_CHANGED,
-				this.gameDoubleState.toJSON()
-			);
 		});
 
 		socket.on(WS_EVENTS.ACTION_GET_USER,(cb)=>{
