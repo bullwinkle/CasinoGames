@@ -1,22 +1,27 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+// const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
-var loaders = [
+
+const JS_LOADER = 	{
+	loader: "babel-loader",
+	query: {
+		presets: [
+			"babel-preset-es2015",
+			"babel-preset-stage-0"
+		],
+		plugins: [
+			"babel-plugin-transform-decorators-legacy"
+		]
+	}
+};
+
+const loaderRules = [
 	{
 		test: /\.jsx?$/,
 		exclude: /node_modules/,
-		loader: "babel-loader",
-		query: {
-			presets: [
-				"babel-preset-es2015",
-				"babel-preset-stage-0"
-			],
-			plugins: [
-				"babel-plugin-transform-decorators-legacy"
-			]
-		}
+		use: [JS_LOADER],
 	},
 	{
 		test: /\.css$/,
@@ -46,7 +51,12 @@ var loaders = [
 	},
 	{
 		test: /\.pug?$/,
-		loader: "pug-loader"
+		use: [
+			JS_LOADER,
+			{
+				loader: "pug-loader"
+			}
+		]
 	},
 	{
 		test: /\.(jpg|png|gif|svg|eot|woff|woff2|ttf)$/,
@@ -54,7 +64,8 @@ var loaders = [
 	},
 ];
 
-module.exports = {
+const CONFIG = module.exports = {
+
 	devtool: 'eval-source-map',
 	entry: path.resolve('src', 'main.js'),
 	output: {
@@ -77,7 +88,7 @@ module.exports = {
 		}),
 	],
 	module: {
-		loaders: loaders
+		rules: loaderRules
 	},
 	devServer: {
 		host: '0.0.0.0',
@@ -87,5 +98,11 @@ module.exports = {
 };
 
 if (process.env.NODE_ENV === 'production') {
-	module.exports.plugins.push(new UglifyJSPlugin());
+	console.warn(process.env.NODE_ENV);
+
+	CONFIG.devtool = 'source-map';
+
+	CONFIG.plugins.push(
+		new webpack.optimize.UglifyJsPlugin()
+	);
 }
